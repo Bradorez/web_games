@@ -13,8 +13,15 @@ type JoinGamePayload = {
 
 const rooms: Record<string, GameState> = {};
 
+const clientOrigin = process.env.CLIENT_ORIGIN ?? "http://localhost:5173";
+
 export const setupSocket = (httpServer: HttpServer): void => {
-  const io = new Server(httpServer);
+  const io = new Server(httpServer, {
+    cors: {
+      origin: clientOrigin,
+      methods: ["GET", "POST"],
+    },
+  });
 
   io.on("connection", (socket) => {
     console.log("User connected");
