@@ -47,6 +47,8 @@ export interface Player {
   hand: Card[];
   /** Whether the player is still active in the game. */
   isAlive: boolean;
+  /** Whether the player's client is currently connected. */
+  isConnected: boolean;
   /** Cards the player has lost or discarded. */
   graveyard: Card[];
 }
@@ -62,6 +64,14 @@ export interface GameState {
   currentPhase: GamePhase;
   /** Central pool of coins, if the rules use one. */
   pot: number;
+  /** The player id who created the room and can start the game. */
+  hostPlayerId: string;
+  /** Whether the game has been started by the host. */
+  isStarted: boolean;
+  /** Whether the game is paused while waiting for a reconnect. */
+  isPaused: boolean;
+  /** Player id currently blocking progress due to disconnect. */
+  pausedPlayerId: string;
   /** Current action awaiting challenges, blocks, or resolution. */
   pendingAction: PendingAction | null;
   /** Player id expected to discard a card during the lose-card window. */

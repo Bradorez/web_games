@@ -9,17 +9,79 @@ const createPlayerId = (): string => {
 };
 
 const serverUrl = import.meta.env.VITE_SERVER_URL ?? "http://localhost:3001";
-const playerId = createPlayerId();
+const PLAYER_KEY_PREFIX = "coup:playerId:";
+const LAST_ROOM_KEY = "coup:lastRoomId";
+const NAME_KEY = "coup:playerName";
 
 export const socket = io(serverUrl, { autoConnect: false });
 
-export const joinGame = (roomId: string, playerName: string): string => {
+const canUseStorage = (): boolean =>
+  typeof window !== "undefined" && typeof localStorage !== "undefined";
+
+const getStoredPlayerId = (roomId: string): string | null => {
+  if (!canUseStorage()) {
+    return null;
+  }
+  return localStorage.getItem(`${PLAYER_KEY_PREFIX}${roomId}`);
+};
+
+export const saveSession = (
+  roomId: string,
+  playerId: string,
+  playerName: string
+): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+  localStorage.setItem(`${PLAYER_KEY_PREFIX}${roomId}`, playerId);
+  localStorage.setItem(LAST_ROOM_KEY, roomId);
+  localStorage.setItem(NAME_KEY, playerName);
+};
+
+export const getSavedSession = (): {
+  roomId: string;
+  playerId: string;
+  playerName: string;
+} | null => {
+  if (!canUseStorage()) {
+    return null;
+  }
+  const roomId = localStorage.getItem(LAST_ROOM_KEY);
+  const playerName = localStorage.getItem(NAME_KEY);
+  if (!roomId || !playerName) {
+    return null;
+  }
+  const playerId = getStoredPlayerId(roomId);
+  if (!playerId) {
+    return null;
+  }
+  return { roomId, playerId, playerName };
+};
+
+const ensureConnected = (): void => {
   if (!socket.connected) {
     socket.connect();
   }
+};
 
-  socket.emit("join_game", { roomId, playerId, name: playerName });
+export const createRoom = (playerName: string): string => {
+  ensureConnected();
+  const playerId = createPlayerId();
+  socket.emit("create_room", { playerId, name: playerName });
   return playerId;
+};
+
+export const joinRoom = (roomId: string, playerName: string): string => {
+  ensureConnected();
+  const storedId = getStoredPlayerId(roomId);
+  const playerId = storedId ?? createPlayerId();
+  socket.emit("join_room", { roomId, playerId, name: playerName });
+  return playerId;
+};
+
+export const startGame = (): void => {
+  ensureConnected();
+  socket.emit("start_game");
 };
 
 export const sendAction = (payload: unknown): void => {
@@ -35,6 +97,10 @@ export const sendAction = (payload: unknown): void => {
     }
     if (typedPayload.event === "pass") {
       socket.emit("pass");
+      return;
+    }
+    if (typedPayload.event === "start_game") {
+      socket.emit("start_game");
       return;
     }
   }

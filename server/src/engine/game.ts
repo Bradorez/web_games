@@ -17,6 +17,10 @@ export const initializeGame = (playerIds: string[]): GameState => {
     turnPlayerId: playerIds[0] ?? "",
     currentPhase: GamePhase.WAITING_FOR_PLAYERS,
     pot: 0,
+    hostPlayerId: playerIds[0] ?? "",
+    isStarted: false,
+    isPaused: false,
+    pausedPlayerId: "",
     pendingAction: null,
     pendingDiscardPlayerId: "",
   };
@@ -70,4 +74,10 @@ export const applyForeignAid = (
 export const handleAction = (
   state: GameState,
   action: GameAction
-): GameState => initiateAction(state, action);
+): GameState => {
+  if (!state.isStarted || state.isPaused) {
+    return state;
+  }
+
+  return initiateAction(state, action);
+};

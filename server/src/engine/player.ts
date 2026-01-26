@@ -8,6 +8,7 @@ export const createPlayer = (id: string, name: string): Player => ({
   coins: STARTING_COINS,
   hand: [],
   isAlive: true,
+  isConnected: true,
   graveyard: [],
 });
 
