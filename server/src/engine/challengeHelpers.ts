@@ -99,6 +99,36 @@ export const swapClaimedCard = (
   );
 };
 
+export const exchangeCards = (
+  state: GameState,
+  playerId: string,
+  drawCount: number
+): GameState => {
+  const player = state.players[playerId];
+  if (!player) {
+    return state;
+  }
+
+  const drawTotal = Math.min(drawCount, state.deck.length);
+  const drawn = state.deck.slice(0, drawTotal);
+  const remainingDeck = state.deck.slice(drawTotal);
+  const combined = [...player.hand, ...drawn];
+  if (combined.length === 0) {
+    return state;
+  }
+
+  const keepCount = player.hand.length;
+  const shuffled = shuffle(combined);
+  const nextHand = shuffled.slice(0, keepCount);
+  const returned = shuffled.slice(keepCount);
+
+  return updatePlayer(
+    { ...state, deck: [...remainingDeck, ...returned] },
+    playerId,
+    { ...player, hand: nextHand }
+  );
+};
+
 export const getEligiblePassers = (
   state: GameState,
   pendingAction: PendingAction

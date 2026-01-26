@@ -1,64 +1,12 @@
+import { GamePhase, GameState } from "../../../shared/types";
 import {
-  ActionType,
-  GamePhase,
-  GameState,
-} from "../../../shared/types";
-import {
-  ACTION_CLAIMS,
   advanceTurn,
-  applyCoins,
   swapClaimedCard,
 } from "./challengeHelpers";
-import { GameAction } from "./actionTypes";
 import {
   LossHandler,
-  createPendingAction,
   resolveAction,
 } from "./challengeResolution";
-
-export const initiateActionFlow = (
-  state: GameState,
-  action: GameAction,
-  applyLoss: LossHandler
-): GameState => {
-  const sourcePlayerId = action.sourcePlayerId ?? state.turnPlayerId;
-  if (!state.players[sourcePlayerId]) {
-    return state;
-  }
-
-  if (action.type === ActionType.Income) {
-    return advanceTurn(applyCoins(state, sourcePlayerId, 1), sourcePlayerId);
-  }
-
-  if (action.type === ActionType.ForeignAid) {
-    return {
-      ...state,
-      currentPhase: GamePhase.BLOCK_WINDOW,
-      pendingAction: createPendingAction(action, sourcePlayerId),
-      pendingDiscardPlayerId: "",
-    };
-  }
-
-  if (action.type === ActionType.Coup) {
-    const pendingAction = createPendingAction(action, sourcePlayerId);
-    const afterLoss = applyLoss(state, pendingAction.targetPlayerId);
-    if (afterLoss.currentPhase === GamePhase.LOSE_CARD_WINDOW) {
-      return { ...afterLoss, pendingAction };
-    }
-    return advanceTurn(afterLoss, sourcePlayerId);
-  }
-
-  if (ACTION_CLAIMS[action.type]) {
-    return {
-      ...state,
-      currentPhase: GamePhase.CHALLENGE_WINDOW,
-      pendingAction: createPendingAction(action, sourcePlayerId),
-      pendingDiscardPlayerId: "",
-    };
-  }
-
-  return state;
-};
 
 export const handleChallengeFlow = (
   state: GameState,

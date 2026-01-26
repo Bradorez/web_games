@@ -5,7 +5,12 @@ import {
   GameState,
   PendingAction,
 } from "../../../shared/types";
-import { ACTION_CLAIMS, advanceTurn, applyCoins } from "./challengeHelpers";
+import {
+  ACTION_CLAIMS,
+  advanceTurn,
+  applyCoins,
+  exchangeCards,
+} from "./challengeHelpers";
 import { GameAction } from "./actionTypes";
 
 export type LossHandler = (state: GameState, playerId: string) => GameState;
@@ -65,6 +70,14 @@ export const resolveAction = (
         return { ...afterLoss, pendingAction };
       }
       return advanceTurn(afterLoss, pendingAction.sourcePlayerId);
+    }
+    case ActionType.Exchange: {
+      const exchangedState = exchangeCards(
+        state,
+        pendingAction.sourcePlayerId,
+        2
+      );
+      return advanceTurn(exchangedState, pendingAction.sourcePlayerId);
     }
     default:
       return advanceTurn(state, pendingAction.sourcePlayerId);

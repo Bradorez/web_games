@@ -1,14 +1,9 @@
 import { GamePhase, GameState, Player } from "../../../shared/types";
-import { handleChallengeFlow, initiateActionFlow } from "./challengeFlow";
+import { handleChallengeFlow } from "./challengeFlow";
+import { initiateActionFlow } from "./challengeInitiateFlow";
 import { updatePlayer } from "./challengeHelpers";
 import { GameAction } from "./actionTypes";
 import { handlePassFlow } from "./challengePassFlow";
-
-const requestDiscard = (state: GameState, playerId: string): GameState => ({
-  ...state,
-  currentPhase: GamePhase.LOSE_CARD_WINDOW,
-  pendingDiscardPlayerId: playerId,
-});
 
 const applyLossIfForced = (state: GameState, playerId: string): GameState => {
   const player = state.players[playerId];
@@ -16,22 +11,13 @@ const applyLossIfForced = (state: GameState, playerId: string): GameState => {
     return state;
   }
 
-  if (player.hand.length > 1) {
-    return requestDiscard(state, playerId);
-  }
-
-  if (player.hand.length === 1) {
-    const [card] = player.hand;
-    const updatedPlayer: Player = {
-      ...player,
-      hand: [],
-      graveyard: [...player.graveyard, { ...card, isRevealed: true }],
-      isAlive: false,
-    };
-    return updatePlayer(state, playerId, updatedPlayer);
-  }
-
-  return state;
+  const remainingLives = Math.max(0, player.lives - 1);
+  const updatedPlayer: Player = {
+    ...player,
+    lives: remainingLives,
+    isAlive: remainingLives > 0,
+  };
+  return updatePlayer(state, playerId, updatedPlayer);
 };
 
 export const initiateAction = (state: GameState, action: GameAction): GameState =>

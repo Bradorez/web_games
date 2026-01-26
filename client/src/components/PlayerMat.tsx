@@ -18,8 +18,13 @@ export const PlayerMat = ({
     >
       <div className="flex items-center justify-between">
         <div className="text-lg font-semibold text-slate-100">{player.name}</div>
-        <div className="rounded-full bg-amber-200 px-3 py-1 text-sm font-semibold text-slate-900">
-          Coins: {player.coins}
+        <div className="flex items-center gap-2">
+          <div className="rounded-full bg-amber-200 px-3 py-1 text-sm font-semibold text-slate-900">
+            Coins: {player.coins}
+          </div>
+          <div className="rounded-full bg-rose-500/80 px-3 py-1 text-sm font-semibold text-white">
+            Lives: {player.lives}
+          </div>
         </div>
       </div>
 

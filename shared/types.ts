@@ -41,6 +41,8 @@ export interface Player {
   id: string;
   /** Display name chosen by the player. */
   name: string;
+  /** Remaining lives for the player. */
+  lives: number;
   /** Current coin count owned by the player. */
   coins: number;
   /** Cards currently in the player's hand. */
