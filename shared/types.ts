@@ -11,7 +11,9 @@ export enum GamePhase {
   WAITING_FOR_PLAYERS = "WAITING_FOR_PLAYERS",
   ACTION_DECLARATION = "ACTION_DECLARATION",
   CHALLENGE_WINDOW = "CHALLENGE_WINDOW",
-  BLOCK_RESPONSE = "BLOCK_RESPONSE",
+  BLOCK_WINDOW = "BLOCK_WINDOW",
+  BLOCK_CHALLENGE_WINDOW = "BLOCK_CHALLENGE_WINDOW",
+  LOSE_CARD_WINDOW = "LOSE_CARD_WINDOW",
   RESOLVING = "RESOLVING",
 }
 
@@ -60,6 +62,10 @@ export interface GameState {
   currentPhase: GamePhase;
   /** Central pool of coins, if the rules use one. */
   pot: number;
+  /** Current action awaiting challenges, blocks, or resolution. */
+  pendingAction: PendingAction | null;
+  /** Player id expected to discard a card during the lose-card window. */
+  pendingDiscardPlayerId: string;
 }
 
 export interface PendingAction {
@@ -69,6 +75,12 @@ export interface PendingAction {
   targetPlayerId: string;
   /** The action being declared and subject to challenge. */
   actionType: ActionType;
-  /** Whether the challenge timer is currently running. */
-  timerStatus: boolean;
+  /** Timestamp (ms) when the current response window expires. */
+  timerExpiresAt: number;
+  /** Player id currently attempting a block, if any. */
+  blockerId: string;
+  /** Card being claimed for the action or block. */
+  claimedCard: CardType;
+  /** Players who have passed during the current response window. */
+  passedPlayerIds: string[];
 }

@@ -1,27 +1,8 @@
-import { GamePhase, GameState, Player } from "../../../shared/types";
+import { GamePhase, GameState } from "../../../shared/types";
 import { createDeck, shuffle } from "./deck";
 import { createPlayer, modifyCoins } from "./player";
-
-const getNextTurnPlayerId = (
-  players: Record<string, Player>,
-  currentPlayerId: string
-): string => {
-  const orderedIds = Object.keys(players);
-  if (orderedIds.length === 0) {
-    return "";
-  }
-
-  const startIndex = Math.max(orderedIds.indexOf(currentPlayerId), 0);
-
-  for (let offset = 1; offset <= orderedIds.length; offset += 1) {
-    const candidateId = orderedIds[(startIndex + offset) % orderedIds.length];
-    if (players[candidateId]?.isAlive) {
-      return candidateId;
-    }
-  }
-
-  return currentPlayerId;
-};
+import { getNextTurnPlayerId } from "./turn";
+import { initiateAction, type GameAction } from "./challenge";
 
 export const initializeGame = (playerIds: string[]): GameState => {
   const players: Record<string, Player> = {};
@@ -36,6 +17,8 @@ export const initializeGame = (playerIds: string[]): GameState => {
     turnPlayerId: playerIds[0] ?? "",
     currentPhase: GamePhase.WAITING_FOR_PLAYERS,
     pot: 0,
+    pendingAction: null,
+    pendingDiscardPlayerId: "",
   };
 };
 
@@ -54,6 +37,9 @@ export const applyIncome = (state: GameState, playerId: string): GameState => {
       [playerId]: updatedPlayer,
     },
     turnPlayerId: getNextTurnPlayerId(state.players, playerId),
+    currentPhase: GamePhase.ACTION_DECLARATION,
+    pendingAction: null,
+    pendingDiscardPlayerId: "",
   };
 };
 
@@ -75,5 +61,13 @@ export const applyForeignAid = (
       [playerId]: updatedPlayer,
     },
     turnPlayerId: getNextTurnPlayerId(state.players, playerId),
+    currentPhase: GamePhase.ACTION_DECLARATION,
+    pendingAction: null,
+    pendingDiscardPlayerId: "",
   };
 };
+
+export const handleAction = (
+  state: GameState,
+  action: GameAction
+): GameState => initiateAction(state, action);

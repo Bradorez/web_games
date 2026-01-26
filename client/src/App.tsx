@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { GameState } from "../../shared/types";
+import { ActionType, GameState } from "../../shared/types";
 import { GameTable } from "./components/GameTable";
 import { joinGame, sendAction, socket } from "./services/socketService";
 
@@ -84,7 +84,7 @@ const App = (): JSX.Element => {
           <div className="text-sm text-slate-400">Room: {roomId || "unknown"}</div>
           <button
             className="rounded-lg bg-amber-300 px-4 py-2 text-sm font-semibold text-slate-900"
-            onClick={() => sendAction({ type: "INCOME" })}
+            onClick={() => sendAction({ type: ActionType.Income })}
             type="button"
           >
             Take Income

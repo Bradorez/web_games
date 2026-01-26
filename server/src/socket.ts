@@ -2,7 +2,8 @@ import { Server } from "socket.io";
 import type { Server as HttpServer } from "http";
 import { GameState } from "../../shared/types";
 import { createPlayer } from "./engine/player";
-import { initializeGame } from "./engine/game";
+import { handleAction, initializeGame } from "./engine/game";
+import { GameAction } from "./engine/actionTypes";
 import { maskState } from "./utils/sanitizer";
 
 type JoinGamePayload = {
@@ -44,12 +45,31 @@ export const setupSocket = (httpServer: HttpServer): void => {
         : baseState;
 
       rooms[roomId] = updatedState;
+      socket.data.roomId = roomId;
+      socket.data.playerId = playerId;
       socket.join(roomId);
       socket.emit("game_state_update", maskState(updatedState, playerId));
     });
 
-    socket.on("action", () => {
-      return;
+    socket.on("action", (payload: GameAction) => {
+      const roomId = socket.data.roomId as string | undefined;
+      const playerId = socket.data.playerId as string | undefined;
+      if (!roomId || !playerId) {
+        return;
+      }
+
+      const state = rooms[roomId];
+      if (!state) {
+        return;
+      }
+
+      const action: GameAction = {
+        ...payload,
+        sourcePlayerId: payload.sourcePlayerId ?? playerId,
+      };
+      const updatedState = handleAction(state, action);
+      rooms[roomId] = updatedState;
+      socket.emit("game_state_update", maskState(updatedState, playerId));
     });
   });
 };

@@ -21,6 +21,12 @@ export const maskState = (
   requestingPlayerId: string
 ): GameState => {
   const maskedPlayers: Record<string, Player> = {};
+  const pendingAction = state.pendingAction
+    ? {
+        ...state.pendingAction,
+        passedPlayerIds: [...state.pendingAction.passedPlayerIds],
+      }
+    : null;
 
   for (const [playerId, player] of Object.entries(state.players)) {
     maskedPlayers[playerId] = {
@@ -34,5 +40,6 @@ export const maskState = (
     ...state,
     deck: [],
     players: maskedPlayers,
+    pendingAction,
   };
 };
