@@ -1,9 +1,10 @@
 import { Server } from "socket.io";
 import type { Server as HttpServer } from "http";
-import { GameState } from "../../shared/types";
+import { GamePhase, GameState } from "../../shared/types";
 import { createPlayer } from "./engine/player";
 import { handleAction, initializeGame } from "./engine/game";
 import { GameAction } from "./engine/actionTypes";
+import { handleChallenge, handlePass } from "./engine/challenge";
 import { maskState } from "./utils/sanitizer";
 
 type JoinGamePayload = {
@@ -23,6 +24,20 @@ export const setupSocket = (httpServer: HttpServer): void => {
       methods: ["GET", "POST"],
     },
   });
+
+  const emitRoomState = async (
+    roomId: string,
+    state: GameState
+  ): Promise<void> => {
+    const sockets = await io.in(roomId).fetchSockets();
+    sockets.forEach((roomSocket) => {
+      const playerId = roomSocket.data.playerId as string | undefined;
+      roomSocket.emit(
+        "game_state_update",
+        maskState(state, playerId ?? "")
+      );
+    });
+  };
 
   io.on("connection", (socket) => {
     console.log("User connected");
@@ -44,14 +59,23 @@ export const setupSocket = (httpServer: HttpServer): void => {
           }
         : baseState;
 
-      rooms[roomId] = updatedState;
+      const readyState =
+        updatedState.currentPhase === GamePhase.WAITING_FOR_PLAYERS
+          ? {
+              ...updatedState,
+              currentPhase: GamePhase.ACTION_DECLARATION,
+              turnPlayerId: updatedState.turnPlayerId || playerId,
+            }
+          : updatedState;
+
+      rooms[roomId] = readyState;
       socket.data.roomId = roomId;
       socket.data.playerId = playerId;
       socket.join(roomId);
-      socket.emit("game_state_update", maskState(updatedState, playerId));
+      void emitRoomState(roomId, readyState);
     });
 
-    socket.on("action", (payload: GameAction) => {
+    socket.on("perform_action", (payload: GameAction) => {
       const roomId = socket.data.roomId as string | undefined;
       const playerId = socket.data.playerId as string | undefined;
       if (!roomId || !playerId) {
@@ -69,7 +93,41 @@ export const setupSocket = (httpServer: HttpServer): void => {
       };
       const updatedState = handleAction(state, action);
       rooms[roomId] = updatedState;
-      socket.emit("game_state_update", maskState(updatedState, playerId));
+      void emitRoomState(roomId, updatedState);
+    });
+
+    socket.on("challenge", () => {
+      const roomId = socket.data.roomId as string | undefined;
+      const playerId = socket.data.playerId as string | undefined;
+      if (!roomId || !playerId) {
+        return;
+      }
+
+      const state = rooms[roomId];
+      if (!state) {
+        return;
+      }
+
+      const updatedState = handleChallenge(state, playerId);
+      rooms[roomId] = updatedState;
+      void emitRoomState(roomId, updatedState);
+    });
+
+    socket.on("pass", () => {
+      const roomId = socket.data.roomId as string | undefined;
+      const playerId = socket.data.playerId as string | undefined;
+      if (!roomId || !playerId) {
+        return;
+      }
+
+      const state = rooms[roomId];
+      if (!state) {
+        return;
+      }
+
+      const updatedState = handlePass(state, playerId);
+      rooms[roomId] = updatedState;
+      void emitRoomState(roomId, updatedState);
     });
   });
 };

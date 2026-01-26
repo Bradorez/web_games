@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { ActionType, GameState } from "../../shared/types";
+import { GameState } from "../../shared/types";
+import {
+  ActionControls,
+  ActionControlPayload,
+} from "./components/ActionControls";
 import { GameTable } from "./components/GameTable";
 import { joinGame, sendAction, socket } from "./services/socketService";
 
@@ -34,6 +38,10 @@ const App = (): JSX.Element => {
     }
     const playerId = joinGame(roomId.trim(), playerName.trim());
     setLocalPlayerId(playerId);
+  };
+
+  const handleAction = (payload: ActionControlPayload) => {
+    sendAction(payload);
   };
 
   if (!gameState) {
@@ -82,15 +90,13 @@ const App = (): JSX.Element => {
       <div className="flex flex-col gap-4 p-6">
         <div className="flex items-center justify-between">
           <div className="text-sm text-slate-400">Room: {roomId || "unknown"}</div>
-          <button
-            className="rounded-lg bg-amber-300 px-4 py-2 text-sm font-semibold text-slate-900"
-            onClick={() => sendAction({ type: ActionType.Income })}
-            type="button"
-          >
-            Take Income
-          </button>
         </div>
         <GameTable gameState={gameState} localPlayerId={localPlayerId} />
+        <ActionControls
+          gameState={gameState}
+          myPlayerId={localPlayerId}
+          onAction={handleAction}
+        />
       </div>
     </div>
   );

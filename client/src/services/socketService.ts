@@ -22,6 +22,22 @@ export const joinGame = (roomId: string, playerName: string): string => {
   return playerId;
 };
 
-export const sendAction = (action: unknown): void => {
-  socket.emit("action", action);
+export const sendAction = (payload: unknown): void => {
+  if (payload && typeof payload === "object" && "event" in payload) {
+    const typedPayload = payload as { event: string; action?: unknown };
+    if (typedPayload.event === "perform_action") {
+      socket.emit("perform_action", typedPayload.action);
+      return;
+    }
+    if (typedPayload.event === "challenge") {
+      socket.emit("challenge");
+      return;
+    }
+    if (typedPayload.event === "pass") {
+      socket.emit("pass");
+      return;
+    }
+  }
+
+  socket.emit("perform_action", payload);
 };
