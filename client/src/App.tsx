@@ -7,7 +7,6 @@ import {
 } from "./components/ActionControls";
 import { GameTable } from "./components/GameTable";
 import { DeckInspector } from "./components/DeckInspector";
-import { GameLog } from "./components/GameLog";
 import { Lobby } from "./components/Lobby";
 import {
   clearSession,
@@ -161,7 +160,6 @@ const App = (): JSX.Element => {
           myPlayerId={localPlayerId}
           onAction={handleAction}
         />
-        <GameLog entries={gameState.gameLog} />
         {showDebug && showDeck && <DeckInspector deck={gameState.deck} />}
       </div>
     </div>

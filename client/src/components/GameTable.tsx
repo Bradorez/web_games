@@ -1,5 +1,6 @@
 import { CardType, GameState } from "../../../shared/types";
 import { Card } from "./Card";
+import { GameLog } from "./GameLog";
 import { PlayerMat } from "./PlayerMat";
 
 interface GameTableProps {
@@ -18,7 +19,10 @@ export const GameTable = ({
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 p-6 text-slate-100">
-      <div className="flex flex-col gap-6">
+      <div className="relative flex flex-col gap-6">
+        <div className="absolute right-0 top-0 w-full max-w-sm">
+          <GameLog entries={gameState.gameLog} />
+        </div>
         <div className="flex flex-wrap justify-center gap-4">
           {otherPlayers.map((player) => (
             <PlayerMat
