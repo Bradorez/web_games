@@ -8,7 +8,7 @@ const httpServer = createServer(app);
 
 setupSocket(httpServer);
 
-const PORT = 3001;
+const PORT = Number(process.env.PORT ?? 3001);
 
 httpServer.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
