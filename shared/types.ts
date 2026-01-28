@@ -84,6 +84,17 @@ export interface GameState {
   pendingAction: PendingAction | null;
   /** Player id expected to discard a card during the lose-card window. */
   pendingDiscardPlayerId: string;
+  /** Chronological log of notable game events. */
+  gameLog: GameLogEntry[];
+}
+
+export interface GameLogEntry {
+  /** Unique identifier for the log entry. */
+  id: string;
+  /** Unix timestamp (ms) for when the entry occurred. */
+  timestamp: number;
+  /** Human-readable description of the event. */
+  message: string;
 }
 
 export interface PendingAction {

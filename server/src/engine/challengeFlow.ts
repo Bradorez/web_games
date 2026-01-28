@@ -7,6 +7,7 @@ import {
   LossHandler,
   resolveAction,
 } from "./challengeResolution";
+import { appendLog } from "./log";
 
 export const handleChallengeFlow = (
   state: GameState,
@@ -35,8 +36,9 @@ export const handleChallengeFlow = (
   );
 
   if (hasCard) {
+    const loggedState = appendLog(state, `${challenger.name} challenges ${challengedPlayer.name} and loses.`);
     const swappedState = swapClaimedCard(
-      state,
+      loggedState,
       challengedId,
       pendingAction.claimedCard
     );
@@ -50,7 +52,7 @@ export const handleChallengeFlow = (
     return resolveAction(afterLoss, pendingAction, applyLoss);
   }
 
-  const afterLoss = applyLoss(state, challengedId);
+  const afterLoss = applyLoss(appendLog(state, `${challenger.name} challenges ${challengedPlayer.name} successfully.`), challengedId);
   if (afterLoss.currentPhase === GamePhase.LOSE_CARD_WINDOW) {
     return { ...afterLoss, pendingAction };
   }

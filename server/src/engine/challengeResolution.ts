@@ -12,6 +12,7 @@ import {
   exchangeCards,
 } from "./challengeHelpers";
 import { GameAction } from "./actionTypes";
+import { appendLog } from "./log";
 
 export type LossHandler = (state: GameState, playerId: string) => GameState;
 
@@ -38,12 +39,12 @@ export const resolveAction = (
   switch (pendingAction.actionType) {
     case ActionType.ForeignAid:
       return advanceTurn(
-        applyCoins(state, pendingAction.sourcePlayerId, 2),
+        appendLog(applyCoins(state, pendingAction.sourcePlayerId, 2), `${state.players[pendingAction.sourcePlayerId]?.name ?? "Player"} gains 2 coins (Foreign Aid).`),
         pendingAction.sourcePlayerId
       );
     case ActionType.Tax:
       return advanceTurn(
-        applyCoins(state, pendingAction.sourcePlayerId, 3),
+        appendLog(applyCoins(state, pendingAction.sourcePlayerId, 3), `${state.players[pendingAction.sourcePlayerId]?.name ?? "Player"} gains 3 coins (Tax).`),
         pendingAction.sourcePlayerId
       );
     case ActionType.Steal: {
@@ -59,24 +60,25 @@ export const resolveAction = (
           }
         : state;
       return advanceTurn(
-        applyCoins(debitState, pendingAction.sourcePlayerId, amount),
+        appendLog(applyCoins(debitState, pendingAction.sourcePlayerId, amount), `${state.players[pendingAction.sourcePlayerId]?.name ?? "Player"} steals ${amount} coins from ${target?.name ?? "a player"}.`),
         pendingAction.sourcePlayerId
       );
     }
     case ActionType.Assassinate:
     case ActionType.Coup: {
-      const afterLoss = applyLoss(state, pendingAction.targetPlayerId);
+      const actionLabel = pendingAction.actionType === ActionType.Coup ? "Coup" : "Assassinate";
+      const afterLoss = applyLoss(appendLog(state, `${state.players[pendingAction.sourcePlayerId]?.name ?? "Player"} resolves ${actionLabel} on ${state.players[pendingAction.targetPlayerId]?.name ?? "a player"}.`), pendingAction.targetPlayerId);
       if (afterLoss.currentPhase === GamePhase.LOSE_CARD_WINDOW) {
         return { ...afterLoss, pendingAction };
       }
       return advanceTurn(afterLoss, pendingAction.sourcePlayerId);
     }
     case ActionType.Exchange: {
-      const exchangedState = exchangeCards(
+      const exchangedState = appendLog(exchangeCards(
         state,
         pendingAction.sourcePlayerId,
         2
-      );
+      ), `${state.players[pendingAction.sourcePlayerId]?.name ?? "Player"} exchanges cards.`);
       return advanceTurn(exchangedState, pendingAction.sourcePlayerId);
     }
     default:

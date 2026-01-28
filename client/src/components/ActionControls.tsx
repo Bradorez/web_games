@@ -18,29 +18,18 @@ export const ActionControls = ({ gameState, myPlayerId, onAction }: ActionContro
   const hostName = gameState.players[gameState.hostPlayerId]?.name ?? "the host";
   const pausedName = gameState.players[gameState.pausedPlayerId]?.name ?? "a player";
   const winnerName = gameState.players[gameState.winnerPlayerId]?.name ?? "Unknown";
+  const pendingAction = gameState.pendingAction;
+  const hasPassed = pendingAction?.passedPlayerIds.includes(myPlayerId) ?? false;
+  const isAlive = gameState.players[myPlayerId]?.isAlive ?? false;
+  const excludedId =
+    gameState.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW && pendingAction?.blockerId
+      ? pendingAction.blockerId
+      : pendingAction?.sourcePlayerId ?? "";
+  const isEligibleResponder = Boolean(isAlive && pendingAction && myPlayerId !== excludedId);
   const targets = Object.values(gameState.players).filter((player) => player.id !== myPlayerId && player.isAlive);
   const hasTargets = targets.length > 0;
-  useEffect(() => {
-    if (gameState.currentPhase !== GamePhase.ACTION_DECLARATION || !isMyTurn) {
-      setPendingTargetAction(null);
-    }
-  }, [gameState.currentPhase, isMyTurn]);
-  if (gameState.isGameOver) {
-    const isHost = myPlayerId === gameState.hostPlayerId;
-    return (
-      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-emerald-500/50 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-        <span>{winnerName} wins the game.</span>
-        {isHost ? (
-          <>
-            <button className="rounded-lg bg-emerald-400 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-900" onClick={() => onAction({ event: "restart_game" })} type="button">Restart</button>
-            <button className="rounded-lg bg-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-100" onClick={() => onAction({ event: "end_room" })} type="button">End Room</button>
-          </>
-        ) : (
-          <span className="text-emerald-200">Waiting for {hostName} to restart or end the room.</span>
-        )}
-      </div>
-    );
-  }
+  useEffect(() => { if (gameState.currentPhase !== GamePhase.ACTION_DECLARATION || !isMyTurn) { setPendingTargetAction(null); } }, [gameState.currentPhase, isMyTurn]);
+  if (gameState.isGameOver) return <div className="flex flex-wrap items-center gap-3 rounded-xl border border-emerald-500/50 bg-emerald-500/10 p-4 text-sm text-emerald-100"><span>{winnerName} wins the game.</span>{myPlayerId === gameState.hostPlayerId ? (<><button className="rounded-lg bg-emerald-400 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-900" onClick={() => onAction({ event: "restart_game" })} type="button">Restart</button><button className="rounded-lg bg-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-100" onClick={() => onAction({ event: "end_room" })} type="button">End Room</button></>) : (<span className="text-emerald-200">Waiting for {hostName} to restart or end the room.</span>)}</div>;
   if (gameState.isPaused) {
     return <div className="rounded-xl border border-amber-400/60 bg-amber-200/10 p-4 text-sm text-amber-200">Waiting for {pausedName} to reconnect...</div>;
   }
@@ -54,6 +43,12 @@ export const ActionControls = ({ gameState, myPlayerId, onAction }: ActionContro
     if (isMyTurn) {
       return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for challenges...</div>;
     }
+    if (!isEligibleResponder) {
+      return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
+    }
+    if (hasPassed) {
+      return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
+    }
     return <div className="flex flex-wrap gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4"><button className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white" onClick={() => onAction({ event: "challenge" })} type="button">Challenge</button><button className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-100" onClick={() => onAction({ event: "pass" })} type="button">Pass</button></div>;
   }
   if (gameState.currentPhase === GamePhase.LOSE_CARD_WINDOW) {
@@ -62,6 +57,12 @@ export const ActionControls = ({ gameState, myPlayerId, onAction }: ActionContro
   if (gameState.currentPhase === GamePhase.BLOCK_WINDOW) {
     if (isMyTurn) {
       return <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300"><span>Waiting for blocks...</span>{!hasTargets && <button className="rounded-lg bg-slate-700 px-3 py-1 text-xs font-semibold text-slate-100" onClick={() => onAction({ event: "pass" })} type="button">Continue</button>}</div>;
+    }
+    if (!isEligibleResponder) {
+      return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
+    }
+    if (hasPassed) {
+      return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
     }
     return <div className="flex flex-wrap gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4"><button className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-100" onClick={() => onAction({ event: "pass" })} type="button">Pass</button></div>;
   }

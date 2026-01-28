@@ -32,6 +32,7 @@ export const createRoomState = (
     isPaused: false,
     pausedPlayerId: "",
     players,
+    gameLog: baseState.gameLog,
   };
 };
 
@@ -124,6 +125,7 @@ export const startGameState = (state: GameState): GameState => ({
   pausedPlayerId: "",
   currentPhase: GamePhase.ACTION_DECLARATION,
   turnPlayerId: state.turnPlayerId || state.hostPlayerId,
+  gameLog: state.gameLog,
 });
 
 export const pauseForDisconnect = (

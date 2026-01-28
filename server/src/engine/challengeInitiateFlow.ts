@@ -6,6 +6,7 @@ import {
 } from "./challengeHelpers";
 import { GameAction } from "./actionTypes";
 import { LossHandler, createPendingAction } from "./challengeResolution";
+import { appendLog } from "./log";
 
 const ASSASSINATE_COST = 3;
 const COUP_COST = 7;
@@ -30,13 +31,11 @@ export const initiateActionFlow = (
     return state;
   }
 
-  if (action.type === ActionType.Income) {
-    return advanceTurn(applyCoins(state, sourcePlayerId, 1), sourcePlayerId);
-  }
+  if (action.type === ActionType.Income) return advanceTurn(appendLog(applyCoins(state, sourcePlayerId, 1), `${state.players[sourcePlayerId]?.name ?? "Player"} takes Income.`), sourcePlayerId);
 
   if (action.type === ActionType.ForeignAid) {
     return {
-      ...state,
+      ...appendLog(state, `${state.players[sourcePlayerId]?.name ?? "Player"} declares Foreign Aid.`),
       currentPhase: GamePhase.BLOCK_WINDOW,
       pendingAction: createPendingAction(action, sourcePlayerId),
       pendingDiscardPlayerId: "",
@@ -54,7 +53,7 @@ export const initiateActionFlow = (
       return state;
     }
 
-    const paidState = applyCoins(state, sourcePlayerId, -COUP_COST);
+    const paidState = appendLog(applyCoins(state, sourcePlayerId, -COUP_COST), `${state.players[sourcePlayerId]?.name ?? "Player"} declares Coup on ${state.players[targetPlayerId]?.name ?? "a player"}.`);
     const pendingAction = createPendingAction(
       { ...action, targetPlayerId },
       sourcePlayerId
@@ -82,7 +81,7 @@ export const initiateActionFlow = (
       if (!sourcePlayer || sourcePlayer.coins < ASSASSINATE_COST) {
         return state;
       }
-      const paidState = applyCoins(state, sourcePlayerId, -ASSASSINATE_COST);
+      const paidState = appendLog(applyCoins(state, sourcePlayerId, -ASSASSINATE_COST), `${state.players[sourcePlayerId]?.name ?? "Player"} declares Assassinate on ${state.players[targetPlayerId]?.name ?? "a player"}.`);
       return {
         ...paidState,
         currentPhase: GamePhase.CHALLENGE_WINDOW,
@@ -95,7 +94,7 @@ export const initiateActionFlow = (
     }
 
     return {
-      ...state,
+      ...appendLog(state, `${state.players[sourcePlayerId]?.name ?? "Player"} declares ${action.type}${targetPlayerId ? ` on ${state.players[targetPlayerId]?.name ?? "a player"}` : ""}.`),
       currentPhase: GamePhase.CHALLENGE_WINDOW,
       pendingAction: createPendingAction(
         { ...action, targetPlayerId },

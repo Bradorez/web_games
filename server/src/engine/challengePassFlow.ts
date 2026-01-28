@@ -10,6 +10,7 @@ import {
   LossHandler,
   resolveAction,
 } from "./challengeResolution";
+import { appendLog } from "./log";
 
 export const handlePassFlow = (
   state: GameState,
@@ -25,7 +26,7 @@ export const handlePassFlow = (
     ? pendingAction.passedPlayerIds
     : [...pendingAction.passedPlayerIds, playerId];
   const updatedPending = { ...pendingAction, passedPlayerIds: passed };
-  const updatedState = { ...state, pendingAction: updatedPending };
+  const updatedState = appendLog({ ...state, pendingAction: updatedPending }, `${state.players[playerId]?.name ?? "Player"} passes.`);
 
   const eligibleIds = getEligiblePassers(state, pendingAction);
   const allPassed = eligibleIds.every((id) => passed.includes(id));

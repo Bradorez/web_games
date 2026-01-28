@@ -27,6 +27,7 @@ export const maskState = (
         passedPlayerIds: [...state.pendingAction.passedPlayerIds],
       }
     : null;
+  const gameLog = state.gameLog.map((entry) => ({ ...entry }));
 
   for (const [playerId, player] of Object.entries(state.players)) {
     maskedPlayers[playerId] = {
@@ -41,5 +42,6 @@ export const maskState = (
     deck: [],
     players: maskedPlayers,
     pendingAction,
+    gameLog,
   };
 };

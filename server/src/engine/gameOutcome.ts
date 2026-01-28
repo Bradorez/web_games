@@ -1,4 +1,5 @@
 import { GamePhase, GameState } from "../../../shared/types";
+import { appendLog } from "./log";
 
 const getAliveIds = (state: GameState): string[] =>
   Object.values(state.players)
@@ -16,7 +17,7 @@ export const enforceGameOver = (state: GameState): GameState => {
   const winnerPlayerId = aliveIds[0] ?? "";
 
   return {
-    ...state,
+    ...appendLog(state, `${state.players[winnerPlayerId]?.name ?? "A player"} wins the game.`),
     isStarted: false,
     isGameOver: true,
     winnerPlayerId,

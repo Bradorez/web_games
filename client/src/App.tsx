@@ -6,6 +6,7 @@ import {
   ActionControlPayload,
 } from "./components/ActionControls";
 import { GameTable } from "./components/GameTable";
+import { GameLog } from "./components/GameLog";
 import { Lobby } from "./components/Lobby";
 import {
   clearSession,
@@ -150,6 +151,7 @@ const App = (): JSX.Element => {
           myPlayerId={localPlayerId}
           onAction={handleAction}
         />
+        <GameLog entries={gameState.gameLog} />
       </div>
     </div>
   );
