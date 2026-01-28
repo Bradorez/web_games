@@ -6,6 +6,10 @@ import { setupSocket } from "./socket";
 const app = express();
 const httpServer = createServer(app);
 
+app.get("/", (_req, res) => {
+  res.status(200).send("OK");
+});
+
 setupSocket(httpServer);
 
 const PORT = Number(process.env.PORT ?? 3001);
