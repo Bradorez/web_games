@@ -19,6 +19,8 @@ export const initializeGame = (playerIds: string[]): GameState => {
     pot: 0,
     hostPlayerId: playerIds[0] ?? "",
     isStarted: false,
+    isGameOver: false,
+    winnerPlayerId: "",
     isPaused: false,
     pausedPlayerId: "",
     pendingAction: null,
@@ -76,6 +78,9 @@ export const handleAction = (
   action: GameAction
 ): GameState => {
   if (!state.isStarted || state.isPaused) {
+    return state;
+  }
+  if (state.isGameOver) {
     return state;
   }
 

@@ -41,6 +41,8 @@ export interface Player {
   id: string;
   /** Display name chosen by the player. */
   name: string;
+  /** Whether the player is controlled by AI. */
+  isBot: boolean;
   /** Remaining lives for the player. */
   lives: number;
   /** Current coin count owned by the player. */
@@ -70,6 +72,10 @@ export interface GameState {
   hostPlayerId: string;
   /** Whether the game has been started by the host. */
   isStarted: boolean;
+  /** Whether the game has concluded with a winner. */
+  isGameOver: boolean;
+  /** Player id of the winning player, if game has ended. */
+  winnerPlayerId: string;
   /** Whether the game is paused while waiting for a reconnect. */
   isPaused: boolean;
   /** Player id currently blocking progress due to disconnect. */

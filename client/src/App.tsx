@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { GameState } from "../../shared/types";
 import {
@@ -8,9 +8,11 @@ import {
 import { GameTable } from "./components/GameTable";
 import { Lobby } from "./components/Lobby";
 import {
+  clearSession,
   createRoom,
   getSavedSession,
   joinRoom,
+  leaveRoom,
   saveSession,
   sendAction,
   socket,
@@ -22,7 +24,9 @@ const App = (): JSX.Element => {
   const [roomId, setRoomId] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [localPlayerId, setLocalPlayerId] = useState("");
+  const [aiCount, setAiCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
+  const lastPlayerIdRef = useRef("");
 
   useEffect(() => {
     const handleGameUpdate = (state: GameState) => setGameState(state);
@@ -30,12 +34,22 @@ const App = (): JSX.Element => {
     const handleDisconnect = () => setIsConnected(false);
     const handleRoomCreated = (payload: { roomId: string }) => {
       setRoomId(payload.roomId);
-      if (localPlayerId) {
-        saveSession(payload.roomId, localPlayerId, playerName);
+      const activePlayerId = lastPlayerIdRef.current || localPlayerId;
+      if (activePlayerId) {
+        saveSession(payload.roomId, activePlayerId, playerName);
       }
     };
     const handleRoomError = (payload: { message: string }) => {
       setErrorMessage(payload.message);
+    };
+    const handleRoomEnded = () => {
+      if (roomId) {
+        clearSession(roomId);
+      }
+      setGameState(null);
+      setRoomId("");
+      setLocalPlayerId("");
+      lastPlayerIdRef.current = "";
     };
 
     socket.on("game_state_update", handleGameUpdate);
@@ -43,6 +57,7 @@ const App = (): JSX.Element => {
     socket.on("disconnect", handleDisconnect);
     socket.on("room_created", handleRoomCreated);
     socket.on("room_error", handleRoomError);
+    socket.on("room_ended", handleRoomEnded);
 
     return () => {
       socket.off("game_state_update", handleGameUpdate);
@@ -50,8 +65,9 @@ const App = (): JSX.Element => {
       socket.off("disconnect", handleDisconnect);
       socket.off("room_created", handleRoomCreated);
       socket.off("room_error", handleRoomError);
+      socket.off("room_ended", handleRoomEnded);
     };
-  }, [localPlayerId, playerName]);
+  }, [localPlayerId, playerName, roomId]);
 
   useEffect(() => {
     const saved = getSavedSession();
@@ -73,6 +89,7 @@ const App = (): JSX.Element => {
     const trimmedName = playerName.trim();
     const playerId = joinRoom(trimmedRoom, trimmedName);
     setLocalPlayerId(playerId);
+    lastPlayerIdRef.current = playerId;
     saveSession(trimmedRoom, playerId, trimmedName);
     setErrorMessage("");
   };
@@ -82,8 +99,9 @@ const App = (): JSX.Element => {
       return;
     }
     const trimmedName = playerName.trim();
-    const playerId = createRoom(trimmedName);
+    const playerId = createRoom(trimmedName, aiCount);
     setLocalPlayerId(playerId);
+    lastPlayerIdRef.current = playerId;
     setErrorMessage("");
   };
 
@@ -91,15 +109,28 @@ const App = (): JSX.Element => {
     sendAction(payload);
   };
 
+  const handleLeaveRoom = () => {
+    leaveRoom();
+    if (roomId) {
+      clearSession(roomId);
+    }
+    setGameState(null);
+    setRoomId("");
+    setLocalPlayerId("");
+    lastPlayerIdRef.current = "";
+  };
+
   if (!gameState) {
     return (
       <Lobby
         playerName={playerName}
         roomId={roomId}
+        aiCount={aiCount}
         isConnected={isConnected}
         errorMessage={errorMessage}
         onNameChange={setPlayerName}
         onRoomIdChange={setRoomId}
+        onAiCountChange={setAiCount}
         onCreateRoom={handleCreateRoom}
         onJoinRoom={handleJoin}
       />
@@ -111,6 +142,7 @@ const App = (): JSX.Element => {
       <div className="flex flex-col gap-4 p-6">
         <div className="flex items-center justify-between">
           <div className="text-sm text-slate-400">Room: {roomId || "unknown"}</div>
+          <button className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-200" type="button" onClick={handleLeaveRoom}>Leave Room</button>
         </div>
         <GameTable gameState={gameState} localPlayerId={localPlayerId} />
         <ActionControls

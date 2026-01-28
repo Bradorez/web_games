@@ -4,6 +4,7 @@ import { initiateActionFlow } from "./challengeInitiateFlow";
 import { updatePlayer } from "./challengeHelpers";
 import { GameAction } from "./actionTypes";
 import { handlePassFlow } from "./challengePassFlow";
+import { enforceGameOver } from "./gameOutcome";
 
 const applyLossIfForced = (state: GameState, playerId: string): GameState => {
   const player = state.players[playerId];
@@ -21,14 +22,15 @@ const applyLossIfForced = (state: GameState, playerId: string): GameState => {
 };
 
 export const initiateAction = (state: GameState, action: GameAction): GameState =>
-  initiateActionFlow(state, action, applyLossIfForced);
+  enforceGameOver(initiateActionFlow(state, action, applyLossIfForced));
 
 export const handleChallenge = (
   state: GameState,
   challengerId: string
-): GameState => handleChallengeFlow(state, challengerId, applyLossIfForced);
+): GameState =>
+  enforceGameOver(handleChallengeFlow(state, challengerId, applyLossIfForced));
 
 export const handlePass = (state: GameState, playerId: string): GameState =>
-  handlePassFlow(state, playerId, applyLossIfForced);
+  enforceGameOver(handlePassFlow(state, playerId, applyLossIfForced));
 
 export type { GameAction } from "./actionTypes";

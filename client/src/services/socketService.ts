@@ -38,6 +38,17 @@ export const saveSession = (
   localStorage.setItem(NAME_KEY, playerName);
 };
 
+export const clearSession = (roomId: string): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+  localStorage.removeItem(`${PLAYER_KEY_PREFIX}${roomId}`);
+  const lastRoomId = localStorage.getItem(LAST_ROOM_KEY);
+  if (lastRoomId === roomId) {
+    localStorage.removeItem(LAST_ROOM_KEY);
+  }
+};
+
 export const getSavedSession = (): {
   roomId: string;
   playerId: string;
@@ -64,10 +75,10 @@ const ensureConnected = (): void => {
   }
 };
 
-export const createRoom = (playerName: string): string => {
+export const createRoom = (playerName: string, aiCount: number): string => {
   ensureConnected();
   const playerId = createPlayerId();
-  socket.emit("create_room", { playerId, name: playerName });
+  socket.emit("create_room", { playerId, name: playerName, aiCount });
   return playerId;
 };
 
@@ -82,6 +93,12 @@ export const joinRoom = (roomId: string, playerName: string): string => {
 export const startGame = (): void => {
   ensureConnected();
   socket.emit("start_game");
+};
+
+export const leaveRoom = (): void => {
+  if (socket.connected) {
+    socket.emit("leave_room");
+  }
 };
 
 export const sendAction = (payload: unknown): void => {
@@ -101,6 +118,14 @@ export const sendAction = (payload: unknown): void => {
     }
     if (typedPayload.event === "start_game") {
       socket.emit("start_game");
+      return;
+    }
+    if (typedPayload.event === "restart_game") {
+      socket.emit("restart_game");
+      return;
+    }
+    if (typedPayload.event === "end_room") {
+      socket.emit("end_room");
       return;
     }
   }
