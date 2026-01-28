@@ -22,9 +22,10 @@ export const handlePassFlow = (
     return state;
   }
 
-  const passed = pendingAction.passedPlayerIds.includes(playerId)
-    ? pendingAction.passedPlayerIds
-    : [...pendingAction.passedPlayerIds, playerId];
+  if (pendingAction.passedPlayerIds.includes(playerId)) {
+    return state;
+  }
+  const passed = [...pendingAction.passedPlayerIds, playerId];
   const updatedPending = { ...pendingAction, passedPlayerIds: passed };
   const updatedState = appendLog({ ...state, pendingAction: updatedPending }, `${state.players[playerId]?.name ?? "Player"} passes.`);
 

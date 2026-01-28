@@ -32,6 +32,7 @@ export const PlayerMat = ({
         {player.hand.map((card) => (
           <Card
             key={card.id}
+            id={card.id}
             type={card.type}
             isFaceUp={card.type !== CardType.Unknown || card.isRevealed}
           />
@@ -40,7 +41,7 @@ export const PlayerMat = ({
 
       <div className="flex flex-wrap gap-2 opacity-70">
         {player.graveyard.map((card) => (
-          <Card key={card.id} type={card.type} isFaceUp={true} />
+          <Card key={card.id} id={card.id} type={card.type} isFaceUp={true} />
         ))}
       </div>
     </div>

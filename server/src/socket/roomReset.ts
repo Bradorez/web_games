@@ -1,6 +1,8 @@
 import { GamePhase, GameState } from "../../../shared/types";
 import { createPlayer } from "../engine/player";
 import { initializeGame } from "../engine/game";
+import { dealInitialHands } from "../engine/deal";
+import { appendLog } from "../engine/log";
 
 const pickHostId = (state: GameState, playerIds: string[]): string =>
   state.hostPlayerId && playerIds.includes(state.hostPlayerId)
@@ -26,9 +28,11 @@ export const restartGameState = (state: GameState): GameState => {
     (player) => player.isAlive && !player.isConnected
   );
 
+  const dealtState = dealInitialHands(
+    appendLog({ ...baseState, players }, "The game restarts. Cards have been dealt.")
+  );
   return {
-    ...baseState,
-    players,
+    ...dealtState,
     hostPlayerId,
     turnPlayerId: hostPlayerId || playerIds[0] || "",
     isStarted: true,
@@ -37,6 +41,5 @@ export const restartGameState = (state: GameState): GameState => {
     currentPhase: GamePhase.ACTION_DECLARATION,
     isPaused: Boolean(pausedPlayer),
     pausedPlayerId: pausedPlayer?.id ?? "",
-    gameLog: [],
   };
 };

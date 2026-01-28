@@ -31,7 +31,7 @@ export const GameTable = ({
 
         <div className="flex items-center justify-center gap-6">
           <div className="flex flex-col items-center gap-2">
-            <Card type={CardType.Unknown} isFaceUp={false} />
+            <Card id="deck" type={CardType.Unknown} isFaceUp={false} />
             <div className="text-xs uppercase tracking-wide text-slate-300">
               Deck {gameState.deck.length}
             </div>

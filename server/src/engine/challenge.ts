@@ -5,20 +5,31 @@ import { updatePlayer } from "./challengeHelpers";
 import { GameAction } from "./actionTypes";
 import { handlePassFlow } from "./challengePassFlow";
 import { enforceGameOver } from "./gameOutcome";
+import { appendLog } from "./log";
 
 const applyLossIfForced = (state: GameState, playerId: string): GameState => {
   const player = state.players[playerId];
   if (!player) {
     return state;
   }
-
-  const remainingLives = Math.max(0, player.lives - 1);
+  const lostCard = player.hand[0];
+  if (!lostCard) {
+    return state;
+  }
+  const remainingHand = player.hand.slice(1);
+  const revealedCard = { ...lostCard, isRevealed: true };
   const updatedPlayer: Player = {
     ...player,
-    lives: remainingLives,
-    isAlive: remainingLives > 0,
+    hand: remainingHand,
+    graveyard: [...player.graveyard, revealedCard],
+    lives: remainingHand.length,
+    isAlive: remainingHand.length > 0,
   };
-  return updatePlayer(state, playerId, updatedPlayer);
+  return updatePlayer(
+    appendLog(state, `${player.name} loses influence (${revealedCard.type}).`),
+    playerId,
+    updatedPlayer
+  );
 };
 
 export const initiateAction = (state: GameState, action: GameAction): GameState =>

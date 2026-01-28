@@ -36,7 +36,7 @@ export const handleChallengeFlow = (
   );
 
   if (hasCard) {
-    const loggedState = appendLog(state, `${challenger.name} challenges ${challengedPlayer.name} and loses.`);
+    const loggedState = appendLog(state, `${challenger.name} challenges ${challengedPlayer.name}; ${challengedPlayer.name} reveals a card and draws a replacement.`);
     const swappedState = swapClaimedCard(
       loggedState,
       challengedId,

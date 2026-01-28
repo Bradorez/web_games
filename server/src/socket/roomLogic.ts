@@ -1,6 +1,8 @@
 import { GamePhase, GameState } from "../../../shared/types";
 import { createPlayer } from "../engine/player";
 import { initializeGame } from "../engine/game";
+import { dealInitialHands } from "../engine/deal";
+import { appendLog } from "../engine/log";
 
 const createBotId = (seed: string, index: number): string =>
   `bot-${seed}-${index}-${Math.random().toString(16).slice(2, 6)}`;
@@ -116,17 +118,21 @@ export const maybeResume = (state: GameState): GameState => {
   };
 };
 
-export const startGameState = (state: GameState): GameState => ({
-  ...state,
-  isStarted: true,
-  isGameOver: false,
-  winnerPlayerId: "",
-  isPaused: false,
-  pausedPlayerId: "",
-  currentPhase: GamePhase.ACTION_DECLARATION,
-  turnPlayerId: state.turnPlayerId || state.hostPlayerId,
-  gameLog: state.gameLog,
-});
+export const startGameState = (state: GameState): GameState => {
+  const dealtState = dealInitialHands(
+    appendLog(state, "The game begins. Cards have been dealt.")
+  );
+  return {
+    ...dealtState,
+    isStarted: true,
+    isGameOver: false,
+    winnerPlayerId: "",
+    isPaused: false,
+    pausedPlayerId: "",
+    currentPhase: GamePhase.ACTION_DECLARATION,
+    turnPlayerId: state.turnPlayerId || state.hostPlayerId,
+  };
+};
 
 export const pauseForDisconnect = (
   state: GameState,
