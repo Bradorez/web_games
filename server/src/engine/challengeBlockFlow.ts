@@ -1,4 +1,4 @@
-import { ActionType, CardType, GamePhase, GameState } from "../../../shared/types";
+import { ActionType, CardType, GamePhase, GameState } from "../../shared/types";
 import { CHALLENGE_DURATION_MS } from "./challengeResolution";
 import { appendLog } from "./log";
 

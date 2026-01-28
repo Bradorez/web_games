@@ -1,4 +1,4 @@
-import { GamePhase, GameState } from "../../../shared/types";
+import { GamePhase, GameState } from "../../shared/types";
 import { createDeck, shuffle } from "./deck";
 import { createPlayer, modifyCoins } from "./player";
 import { getNextTurnPlayerId } from "./turn";

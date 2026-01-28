@@ -1,5 +1,5 @@
 import { Server } from "socket.io";
-import { GameState } from "../../../shared/types";
+import { GameState } from "../../shared/types";
 import { maskState } from "../utils/sanitizer";
 
 export const emitRoomState = async (

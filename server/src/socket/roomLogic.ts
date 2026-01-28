@@ -1,4 +1,4 @@
-import { GamePhase, GameState } from "../../../shared/types";
+import { GamePhase, GameState } from "../../shared/types";
 import { createPlayer } from "../engine/player";
 import { initializeGame } from "../engine/game";
 import { dealInitialHands } from "../engine/deal";

@@ -1,4 +1,4 @@
-import { ActionType, GamePhase, GameState } from "../../../shared/types";
+import { ActionType, GamePhase, GameState } from "../../shared/types";
 import { handleExchangeChoice, handlePass } from "../engine/challenge";
 import { handleAction } from "../engine/game";
 import { GameAction } from "../engine/actionTypes";

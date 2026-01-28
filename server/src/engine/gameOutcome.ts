@@ -1,4 +1,4 @@
-import { GamePhase, GameState } from "../../../shared/types";
+import { GamePhase, GameState } from "../../shared/types";
 import { appendLog } from "./log";
 
 const getAliveIds = (state: GameState): string[] =>

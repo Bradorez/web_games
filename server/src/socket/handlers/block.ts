@@ -1,5 +1,5 @@
 import type { Server, Socket } from "socket.io";
-import { CardType } from "../../../../shared/types";
+import { CardType } from "../../../shared/types";
 import { handleBlock } from "../../engine/challenge";
 import { emitRoomState } from "../emitRoomState";
 import { runAiTurn } from "../roomAi";

@@ -1,4 +1,4 @@
-import { Card, GameState, Player } from "../../../shared/types";
+import { Card, GameState, Player } from "../../shared/types";
 
 const drawFromDeck = (deck: Card[], count: number): { drawn: Card[]; deck: Card[] } => ({
   drawn: deck.slice(0, count),

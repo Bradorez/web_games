@@ -1,4 +1,4 @@
-import { ActionType, GamePhase, GameState } from "../../../shared/types";
+import { ActionType, GamePhase, GameState } from "../../shared/types";
 import {
   ACTION_CLAIMS,
   advanceTurn,

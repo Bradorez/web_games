@@ -4,7 +4,7 @@ import {
   GamePhase,
   GameState,
   PendingAction,
-} from "../../../shared/types";
+} from "../../shared/types";
 import {
   ACTION_CLAIMS,
   advanceTurn,

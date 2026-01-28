@@ -5,7 +5,7 @@ import {
   GameState,
   PendingAction,
   Player,
-} from "../../../shared/types";
+} from "../../shared/types";
 import { shuffle } from "./deck";
 import { modifyCoins } from "./player";
 import { getNextTurnPlayerId } from "./turn";

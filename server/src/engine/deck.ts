@@ -1,4 +1,4 @@
-import { Card, CardType } from "../../../shared/types";
+import { Card, CardType } from "../../shared/types";
 
 const COPIES_PER_TYPE = 3;
 const DECK_CARD_TYPES: CardType[] = [

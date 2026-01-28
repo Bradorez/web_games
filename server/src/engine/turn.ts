@@ -1,4 +1,4 @@
-import { Player } from "../../../shared/types";
+import { Player } from "../../shared/types";
 
 export const getNextTurnPlayerId = (
   players: Record<string, Player>,

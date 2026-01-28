@@ -1,4 +1,4 @@
-import { GamePhase, GameState } from "../../../shared/types";
+import { GamePhase, GameState } from "../../shared/types";
 import {
   advanceTurn,
   swapClaimedCard,

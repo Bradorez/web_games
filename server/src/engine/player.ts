@@ -1,4 +1,4 @@
-import { Player } from "../../../shared/types";
+import { Player } from "../../shared/types";
 
 const STARTING_COINS = 2;
 const STARTING_LIVES = 2;

@@ -1,4 +1,4 @@
-import { GameLogEntry, GameState } from "../../../shared/types";
+import { GameLogEntry, GameState } from "../../shared/types";
 
 const createLogEntry = (message: string): GameLogEntry => ({
   id: `${Date.now()}-${Math.random().toString(16).slice(2, 8)}`,

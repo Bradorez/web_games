@@ -1,4 +1,4 @@
-import { CardType, GamePhase, GameState, Player } from "../../../shared/types";
+import { CardType, GamePhase, GameState, Player } from "../../shared/types";
 import { handleChallengeFlow } from "./challengeFlow";
 import { initiateActionFlow } from "./challengeInitiateFlow";
 import { updatePlayer } from "./challengeHelpers";

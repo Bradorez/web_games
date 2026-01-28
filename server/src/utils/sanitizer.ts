@@ -1,4 +1,4 @@
-import { Card, CardType, GameState, Player } from "../../../shared/types";
+import { Card, CardType, GameState, Player } from "../../shared/types";
 
 const maskHand = (
   playerId: string,

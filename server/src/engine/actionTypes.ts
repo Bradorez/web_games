@@ -1,4 +1,4 @@
-import { ActionType } from "../../../shared/types";
+import { ActionType } from "../../shared/types";
 
 export interface GameAction {
   type: ActionType;
