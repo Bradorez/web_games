@@ -103,7 +103,7 @@ export const leaveRoom = (): void => {
 
 export const sendAction = (payload: unknown): void => {
   if (payload && typeof payload === "object" && "event" in payload) {
-    const typedPayload = payload as { event: string; action?: unknown };
+    const typedPayload = payload as { event: string } & Record<string, unknown>;
     if (typedPayload.event === "perform_action") {
       socket.emit("perform_action", typedPayload.action);
       return;
@@ -129,13 +129,15 @@ export const sendAction = (payload: unknown): void => {
       return;
     }
     if (typedPayload.event === "exchange_choice") {
-      const exchangePayload = typedPayload as { keepCardIds: string[] };
-      socket.emit("exchange_choice", { keepCardIds: exchangePayload.keepCardIds });
+      if ("keepCardIds" in typedPayload && Array.isArray(typedPayload.keepCardIds)) {
+        socket.emit("exchange_choice", { keepCardIds: typedPayload.keepCardIds });
+      }
       return;
     }
     if (typedPayload.event === "block") {
-      const blockPayload = typedPayload as { claimedCard: string };
-      socket.emit("block", { claimedCard: blockPayload.claimedCard });
+      if ("claimedCard" in typedPayload && typeof typedPayload.claimedCard === "string") {
+        socket.emit("block", { claimedCard: typedPayload.claimedCard });
+      }
       return;
     }
   }
