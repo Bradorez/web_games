@@ -128,6 +128,16 @@ export const sendAction = (payload: unknown): void => {
       socket.emit("end_room");
       return;
     }
+    if (typedPayload.event === "exchange_choice") {
+      const exchangePayload = typedPayload as { keepCardIds: string[] };
+      socket.emit("exchange_choice", { keepCardIds: exchangePayload.keepCardIds });
+      return;
+    }
+    if (typedPayload.event === "block") {
+      const blockPayload = typedPayload as { claimedCard: string };
+      socket.emit("block", { claimedCard: blockPayload.claimedCard });
+      return;
+    }
   }
 
   socket.emit("perform_action", payload);

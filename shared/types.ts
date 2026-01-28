@@ -13,6 +13,7 @@ export enum GamePhase {
   CHALLENGE_WINDOW = "CHALLENGE_WINDOW",
   BLOCK_WINDOW = "BLOCK_WINDOW",
   BLOCK_CHALLENGE_WINDOW = "BLOCK_CHALLENGE_WINDOW",
+  EXCHANGE_WINDOW = "EXCHANGE_WINDOW",
   LOSE_CARD_WINDOW = "LOSE_CARD_WINDOW",
   RESOLVING = "RESOLVING",
 }
@@ -84,6 +85,8 @@ export interface GameState {
   pendingAction: PendingAction | null;
   /** Player id expected to discard a card during the lose-card window. */
   pendingDiscardPlayerId: string;
+  /** Exchange data when an Ambassador exchange is in progress. */
+  pendingExchange: PendingExchange | null;
   /** Chronological log of notable game events. */
   gameLog: GameLogEntry[];
 }
@@ -112,4 +115,13 @@ export interface PendingAction {
   claimedCard: CardType;
   /** Players who have passed during the current response window. */
   passedPlayerIds: string[];
+}
+
+export interface PendingExchange {
+  /** Player id performing the exchange. */
+  playerId: string;
+  /** Combined hand + drawn cards available to choose from. */
+  options: Card[];
+  /** Number of cards the player must keep. */
+  keepCount: number;
 }

@@ -9,7 +9,6 @@ import {
   ACTION_CLAIMS,
   advanceTurn,
   applyCoins,
-  exchangeCards,
 } from "./challengeHelpers";
 import { GameAction } from "./actionTypes";
 import { appendLog } from "./log";
@@ -74,14 +73,74 @@ export const resolveAction = (
       return advanceTurn(afterLoss, pendingAction.sourcePlayerId);
     }
     case ActionType.Exchange: {
-      const exchangedState = appendLog(exchangeCards(
-        state,
-        pendingAction.sourcePlayerId,
-        2
-      ), `${state.players[pendingAction.sourcePlayerId]?.name ?? "Player"} exchanges cards.`);
-      return advanceTurn(exchangedState, pendingAction.sourcePlayerId);
+      const player = state.players[pendingAction.sourcePlayerId];
+      if (!player) {
+        return state;
+      }
+      const drawCount = Math.min(2, state.deck.length);
+      const drawn = state.deck.slice(0, drawCount);
+      const remainingDeck = state.deck.slice(drawCount);
+      return {
+        ...appendLog(state, `${player.name} begins an exchange.`),
+        deck: remainingDeck,
+        currentPhase: GamePhase.EXCHANGE_WINDOW,
+        pendingAction: null,
+        pendingDiscardPlayerId: "",
+        pendingExchange: {
+          playerId: player.id,
+          options: [...player.hand, ...drawn],
+          keepCount: player.hand.length,
+        },
+      };
     }
     default:
       return advanceTurn(state, pendingAction.sourcePlayerId);
   }
+};
+
+export const applyExchangeChoice = (
+  state: GameState,
+  playerId: string,
+  keepCardIds: string[]
+): GameState => {
+  if (state.currentPhase !== GamePhase.EXCHANGE_WINDOW || !state.pendingExchange) {
+    return state;
+  }
+  const pending = state.pendingExchange;
+  if (pending.playerId !== playerId) {
+    return state;
+  }
+  if (keepCardIds.length !== pending.keepCount) {
+    return state;
+  }
+  if (new Set(keepCardIds).size !== keepCardIds.length) {
+    return state;
+  }
+
+  const optionMap = new Map(pending.options.map((card) => [card.id, card]));
+  const kept = keepCardIds.map((id) => optionMap.get(id)).filter(Boolean) as typeof pending.options;
+  if (kept.length !== pending.keepCount) {
+    return state;
+  }
+  const keptIds = new Set(kept.map((card) => card.id));
+  const returned = pending.options.filter((card) => !keptIds.has(card.id));
+  const player = state.players[playerId];
+  if (!player) {
+    return state;
+  }
+
+  const updatedState: GameState = {
+    ...state,
+    deck: [...state.deck, ...returned],
+    pendingExchange: null,
+    players: {
+      ...state.players,
+      [playerId]: { ...player, hand: kept, lives: kept.length, isAlive: kept.length > 0 },
+    },
+  };
+
+  return advanceTurn(
+    appendLog(updatedState, `${player.name} completes the exchange.`),
+    playerId
+  );
 };

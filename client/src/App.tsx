@@ -6,6 +6,7 @@ import {
   ActionControlPayload,
 } from "./components/ActionControls";
 import { GameTable } from "./components/GameTable";
+import { DeckInspector } from "./components/DeckInspector";
 import { GameLog } from "./components/GameLog";
 import { Lobby } from "./components/Lobby";
 import {
@@ -28,6 +29,8 @@ const App = (): JSX.Element => {
   const [aiCount, setAiCount] = useState(0);
   const [errorMessage, setErrorMessage] = useState("");
   const lastPlayerIdRef = useRef("");
+  const showDebug = import.meta.env.VITE_DEBUG_MODE === "true";
+  const [showDeck, setShowDeck] = useState(false);
 
   useEffect(() => {
     const handleGameUpdate = (state: GameState) => setGameState(state);
@@ -143,7 +146,14 @@ const App = (): JSX.Element => {
       <div className="flex flex-col gap-4 p-6">
         <div className="flex items-center justify-between">
           <div className="text-sm text-slate-400">Room: {roomId || "unknown"}</div>
-          <button className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-200" type="button" onClick={handleLeaveRoom}>Leave Room</button>
+          <div className="flex items-center gap-2">
+            {showDebug && (
+              <button className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-200" type="button" onClick={() => setShowDeck((prev) => !prev)}>
+                {showDeck ? "Hide Deck" : "Show Deck"}
+              </button>
+            )}
+            <button className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-200" type="button" onClick={handleLeaveRoom}>Leave Room</button>
+          </div>
         </div>
         <GameTable gameState={gameState} localPlayerId={localPlayerId} />
         <ActionControls
@@ -152,6 +162,7 @@ const App = (): JSX.Element => {
           onAction={handleAction}
         />
         <GameLog entries={gameState.gameLog} />
+        {showDebug && showDeck && <DeckInspector deck={gameState.deck} />}
       </div>
     </div>
   );

@@ -81,6 +81,7 @@ export const swapClaimedCard = (
   const claimed = player.hand[index];
   const remainingHand = player.hand.filter((_, i) => i !== index);
   const [replacement, ...restDeck] = state.deck;
+  const returnedCard = { ...claimed, isRevealed: false };
 
   if (!replacement) {
     return updatePlayer(state, playerId, {
@@ -90,7 +91,7 @@ export const swapClaimedCard = (
   }
 
   const refreshedHand = [...remainingHand, replacement];
-  const refreshedDeck = shuffle([...restDeck, { ...claimed, isRevealed: false }]);
+  const refreshedDeck = [...restDeck, returnedCard];
 
   return updatePlayer(
     { ...state, deck: refreshedDeck },

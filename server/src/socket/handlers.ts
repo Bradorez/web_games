@@ -4,18 +4,13 @@ import { handleAction } from "../engine/game";
 import { handleChallenge, handlePass } from "../engine/challenge";
 import { emitRoomState } from "./emitRoomState";
 import { rooms, createRoomCode } from "./roomStore";
-import {
-  createRoomState,
-  maybeResume,
-  pauseForDisconnect,
-  setPlayerConnection,
-  startGameState,
-  upsertPlayer,
-} from "./roomLogic";
+import { createRoomState, maybeResume, pauseForDisconnect, setPlayerConnection, startGameState, upsertPlayer } from "./roomLogic";
 import { runAiTurn } from "./roomAi";
 import { handleLeaveRoom } from "./handlers/leaveRoom";
 import { handleRestartGame } from "./handlers/restartGame";
 import { handleEndRoom } from "./handlers/endRoom";
+import { handleExchangeChoiceEvent } from "./handlers/exchangeChoice";
+import { handleBlockEvent } from "./handlers/block";
 type CreateRoomPayload = { playerId: string; name: string; aiCount?: number };
 type JoinRoomPayload = { roomId: string; playerId: string; name: string };
 export const registerSocketHandlers = (io: Server, socket: Socket): void => {
@@ -118,6 +113,12 @@ export const registerSocketHandlers = (io: Server, socket: Socket): void => {
     rooms[roomId] = progressedState;
     void emitRoomState(io, roomId, progressedState);
   });
+  socket.on("block", (payload: { claimedCard: string }) =>
+    handleBlockEvent(io, socket, payload)
+  );
+  socket.on("exchange_choice", (payload: { keepCardIds: string[] }) => {
+    handleExchangeChoiceEvent(io, socket, payload);
+  });
   socket.on("disconnect", () => {
     const roomId = socket.data.roomId as string | undefined;
     const playerId = socket.data.playerId as string | undefined;
@@ -137,13 +138,7 @@ export const registerSocketHandlers = (io: Server, socket: Socket): void => {
     rooms[roomId] = progressedState;
     void emitRoomState(io, roomId, progressedState);
   });
-  socket.on("leave_room", () => {
-    handleLeaveRoom(io, socket);
-  });
-  socket.on("restart_game", () => {
-    handleRestartGame(io, socket);
-  });
-  socket.on("end_room", () => {
-    void handleEndRoom(io, socket);
-  });
+  socket.on("leave_room", () => handleLeaveRoom(io, socket));
+  socket.on("restart_game", () => handleRestartGame(io, socket));
+  socket.on("end_room", () => void handleEndRoom(io, socket));
 };

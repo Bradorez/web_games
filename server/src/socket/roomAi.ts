@@ -1,8 +1,9 @@
 import { ActionType, GamePhase, GameState } from "../../../shared/types";
-import { handlePass } from "../engine/challenge";
+import { handleExchangeChoice, handlePass } from "../engine/challenge";
 import { handleAction } from "../engine/game";
 import { GameAction } from "../engine/actionTypes";
 import { getEligiblePassers } from "../engine/challengeHelpers";
+import { shuffle } from "../engine/deck";
 
 const MAX_AI_STEPS = 20;
 const ASSASSINATE_COST = 3;
@@ -117,6 +118,22 @@ export const runAiTurn = (state: GameState): GameState => {
         break;
       }
       const next = handleAction(current, action);
+      if (next === current) {
+        break;
+      }
+      current = next;
+      continue;
+    }
+
+    if (current.currentPhase === GamePhase.EXCHANGE_WINDOW && current.pendingExchange) {
+      const pending = current.pendingExchange;
+      const exchangePlayer = current.players[pending.playerId];
+      if (!exchangePlayer?.isBot) {
+        break;
+      }
+      const shuffled = shuffle(pending.options);
+      const keepCardIds = shuffled.slice(0, pending.keepCount).map((card) => card.id);
+      const next = handleExchangeChoice(current, pending.playerId, keepCardIds);
       if (next === current) {
         break;
       }

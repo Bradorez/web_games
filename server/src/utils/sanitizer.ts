@@ -20,6 +20,7 @@ export const maskState = (
   state: GameState,
   requestingPlayerId: string
 ): GameState => {
+  const showDeck = process.env.DEBUG_DECK === "true";
   const maskedPlayers: Record<string, Player> = {};
   const pendingAction = state.pendingAction
     ? {
@@ -27,6 +28,13 @@ export const maskState = (
         passedPlayerIds: [...state.pendingAction.passedPlayerIds],
       }
     : null;
+  const pendingExchange =
+    state.pendingExchange && state.pendingExchange.playerId === requestingPlayerId
+      ? {
+          ...state.pendingExchange,
+          options: state.pendingExchange.options.map((card) => ({ ...card })),
+        }
+      : null;
   const gameLog = state.gameLog.map((entry) => ({ ...entry }));
 
   for (const [playerId, player] of Object.entries(state.players)) {
@@ -39,9 +47,10 @@ export const maskState = (
 
   return {
     ...state,
-    deck: [],
+    deck: showDeck ? state.deck.map((card) => ({ ...card })) : [],
     players: maskedPlayers,
     pendingAction,
+    pendingExchange,
     gameLog,
   };
 };

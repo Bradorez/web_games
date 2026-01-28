@@ -25,6 +25,7 @@ export const initializeGame = (playerIds: string[]): GameState => {
     pausedPlayerId: "",
     pendingAction: null,
     pendingDiscardPlayerId: "",
+    pendingExchange: null,
     gameLog: [],
   };
 };
