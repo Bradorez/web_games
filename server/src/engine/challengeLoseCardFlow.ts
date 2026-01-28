@@ -1,4 +1,4 @@
-import { GamePhase, GameState, Player } from "../../../shared/types";
+import { GamePhase, GameState, Player } from "../../shared/types";
 import { advanceTurn, clearPending, updatePlayer } from "./challengeHelpers";
 import { LossHandler, resolveAction } from "./challengeResolution";
 import { appendLog } from "./log";
