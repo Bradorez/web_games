@@ -44,7 +44,7 @@ export const handleChallengeFlow = (
     );
     const afterLoss = applyLoss(swappedState, challengerId);
     if (afterLoss.currentPhase === GamePhase.LOSE_CARD_WINDOW) {
-      return { ...afterLoss, pendingAction };
+      return { ...afterLoss, pendingAction, pendingResolution: { kind: "resolve_action", sourcePlayerId: pendingAction.sourcePlayerId } };
     }
     if (state.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW) {
       return advanceTurn(afterLoss, pendingAction.sourcePlayerId);
@@ -54,7 +54,8 @@ export const handleChallengeFlow = (
 
   const afterLoss = applyLoss(appendLog(state, `${challenger.name} challenges ${challengedPlayer.name} successfully.`), challengedId);
   if (afterLoss.currentPhase === GamePhase.LOSE_CARD_WINDOW) {
-    return { ...afterLoss, pendingAction };
+    const kind = state.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW ? "resolve_action" : "advance_turn";
+    return { ...afterLoss, pendingAction, pendingResolution: { kind, sourcePlayerId: pendingAction.sourcePlayerId } };
   }
 
   if (state.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW) {

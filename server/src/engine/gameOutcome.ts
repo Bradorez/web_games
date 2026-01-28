@@ -26,6 +26,7 @@ export const enforceGameOver = (state: GameState): GameState => {
     currentPhase: GamePhase.WAITING_FOR_PLAYERS,
     pendingAction: null,
     pendingDiscardPlayerId: "",
+    pendingResolution: null,
     pendingExchange: null,
   };
 };

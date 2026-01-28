@@ -60,7 +60,7 @@ export const initiateActionFlow = (
     );
     const afterLoss = applyLoss(paidState, pendingAction.targetPlayerId);
     if (afterLoss.currentPhase === GamePhase.LOSE_CARD_WINDOW) {
-      return { ...afterLoss, pendingAction };
+      return { ...afterLoss, pendingAction, pendingResolution: { kind: "advance_turn", sourcePlayerId } };
     }
     return advanceTurn(afterLoss, sourcePlayerId);
   }

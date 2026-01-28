@@ -8,6 +8,7 @@ import { enforceGameOver } from "./gameOutcome";
 import { appendLog } from "./log";
 import { applyExchangeChoice } from "./challengeResolution";
 import { handleBlockFlow } from "./challengeBlockFlow";
+import { handleLoseCardChoiceFlow } from "./challengeLoseCardFlow";
 
 const applyLossIfForced = (state: GameState, playerId: string): GameState => {
   const player = state.players[playerId];
@@ -17,6 +18,13 @@ const applyLossIfForced = (state: GameState, playerId: string): GameState => {
   const lostCard = player.hand[0];
   if (!lostCard) {
     return state;
+  }
+  if (player.hand.length > 1) {
+    return {
+      ...appendLog(state, `${player.name} must choose a card to lose.`),
+      currentPhase: GamePhase.LOSE_CARD_WINDOW,
+      pendingDiscardPlayerId: playerId,
+    };
   }
   const remainingHand = player.hand.slice(1);
   const revealedCard = { ...lostCard, isRevealed: true };
@@ -57,5 +65,12 @@ export const handleExchangeChoice = (
   playerId: string,
   keepCardIds: string[]
 ): GameState => enforceGameOver(applyExchangeChoice(state, playerId, keepCardIds));
+
+export const handleLoseCardChoice = (
+  state: GameState,
+  playerId: string,
+  cardId: string
+): GameState =>
+  enforceGameOver(handleLoseCardChoiceFlow(state, playerId, cardId, applyLossIfForced));
 
 export type { GameAction } from "./actionTypes";

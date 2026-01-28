@@ -11,6 +11,7 @@ import { handleRestartGame } from "./handlers/restartGame";
 import { handleEndRoom } from "./handlers/endRoom";
 import { handleExchangeChoiceEvent } from "./handlers/exchangeChoice";
 import { handleBlockEvent } from "./handlers/block";
+import { handleLoseCardEvent } from "./handlers/loseCard";
 type CreateRoomPayload = { playerId: string; name: string; aiCount?: number };
 type JoinRoomPayload = { roomId: string; playerId: string; name: string };
 export const registerSocketHandlers = (io: Server, socket: Socket): void => {
@@ -118,6 +119,9 @@ export const registerSocketHandlers = (io: Server, socket: Socket): void => {
   );
   socket.on("exchange_choice", (payload: { keepCardIds: string[] }) => {
     handleExchangeChoiceEvent(io, socket, payload);
+  });
+  socket.on("lose_card", (payload: { cardId: string }) => {
+    handleLoseCardEvent(io, socket, payload);
   });
   socket.on("disconnect", () => {
     const roomId = socket.data.roomId as string | undefined;

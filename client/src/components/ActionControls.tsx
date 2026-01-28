@@ -3,8 +3,9 @@ import { ActionType, CardType, GamePhase, GameState } from "../../../shared/type
 import { ActionButtonGrid } from "./ActionButtonGrid";
 import { BlockControls } from "./BlockControls";
 import { ExchangePicker } from "./ExchangePicker";
+import { LoseCardPicker } from "./LoseCardPicker";
 import { TargetPicker } from "./TargetPicker";
-export type ActionControlPayload = { event: "perform_action"; action: { type: ActionType; targetPlayerId?: string } } | { event: "challenge" } | { event: "pass" } | { event: "block"; claimedCard: CardType } | { event: "start_game" } | { event: "restart_game" } | { event: "end_room" } | { event: "exchange_choice"; keepCardIds: string[] };
+export type ActionControlPayload = { event: "perform_action"; action: { type: ActionType; targetPlayerId?: string } } | { event: "challenge" } | { event: "pass" } | { event: "block"; claimedCard: CardType } | { event: "lose_card"; cardId: string } | { event: "start_game" } | { event: "restart_game" } | { event: "end_room" } | { event: "exchange_choice"; keepCardIds: string[] };
 
 interface ActionControlsProps {
   gameState: GameState;
@@ -44,29 +45,21 @@ export const ActionControls = ({ gameState, myPlayerId, onAction }: ActionContro
     }
     return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for {hostName} to start the game...</div>;
   }
-  if (gameState.currentPhase === GamePhase.CHALLENGE_WINDOW) {
-    if (isBlockable && pendingAction) {
+  if (gameState.currentPhase === GamePhase.CHALLENGE_WINDOW || gameState.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW) {
+    if (gameState.currentPhase === GamePhase.CHALLENGE_WINDOW && isBlockable && pendingAction) {
       return <BlockControls pendingAction={pendingAction} myPlayerId={myPlayerId} hasPassed={hasPassed} isAlive={isAlive} onBlock={(claimedCard) => onAction({ event: "block", claimedCard })} onPass={() => onAction({ event: "pass" })} onChallenge={() => onAction({ event: "challenge" })} showChallenge={true} />;
     }
-    if (!isEligibleResponder) {
-      return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
-    }
-    if (hasPassed) {
-      return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
-    }
-    return <div className="flex flex-wrap gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4"><button className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white" onClick={() => onAction({ event: "challenge" })} type="button">Challenge</button><button className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-100" onClick={() => onAction({ event: "pass" })} type="button">Pass</button></div>;
-  }
-  if (gameState.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW) {
-    if (!isEligibleResponder) {
-      return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
-    }
-    if (hasPassed) {
+    if (!isEligibleResponder || hasPassed) {
       return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
     }
     return <div className="flex flex-wrap gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4"><button className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white" onClick={() => onAction({ event: "challenge" })} type="button">Challenge</button><button className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-100" onClick={() => onAction({ event: "pass" })} type="button">Pass</button></div>;
   }
   if (gameState.currentPhase === GamePhase.LOSE_CARD_WINDOW) {
-    return <div className="rounded-xl border border-amber-400/60 bg-amber-200/10 p-4 text-sm text-amber-200">Select a card from your hand to lose.</div>;
+    if (gameState.pendingDiscardPlayerId === myPlayerId) {
+      const hand = gameState.players[myPlayerId]?.hand ?? [];
+      return <LoseCardPicker hand={hand} onSelect={(cardId) => onAction({ event: "lose_card", cardId })} />;
+    }
+    return <div className="rounded-xl border border-amber-400/60 bg-amber-200/10 p-4 text-sm text-amber-200">Waiting for player to discard...</div>;
   }
   if (gameState.currentPhase === GamePhase.EXCHANGE_WINDOW) {
     if (pendingExchange?.playerId === myPlayerId) {

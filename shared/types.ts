@@ -85,6 +85,8 @@ export interface GameState {
   pendingAction: PendingAction | null;
   /** Player id expected to discard a card during the lose-card window. */
   pendingDiscardPlayerId: string;
+  /** Pending resolution to apply after a forced discard. */
+  pendingResolution: PendingResolution | null;
   /** Exchange data when an Ambassador exchange is in progress. */
   pendingExchange: PendingExchange | null;
   /** Chronological log of notable game events. */
@@ -124,4 +126,11 @@ export interface PendingExchange {
   options: Card[];
   /** Number of cards the player must keep. */
   keepCount: number;
+}
+
+export interface PendingResolution {
+  /** Whether to resolve the pending action or just advance the turn. */
+  kind: "resolve_action" | "advance_turn";
+  /** The player id to use when advancing the turn. */
+  sourcePlayerId: string;
 }

@@ -140,6 +140,12 @@ export const sendAction = (payload: unknown): void => {
       }
       return;
     }
+    if (typedPayload.event === "lose_card") {
+      if ("cardId" in typedPayload && typeof typedPayload.cardId === "string") {
+        socket.emit("lose_card", { cardId: typedPayload.cardId });
+      }
+      return;
+    }
   }
 
   socket.emit("perform_action", payload);

@@ -68,7 +68,7 @@ export const resolveAction = (
       const actionLabel = pendingAction.actionType === ActionType.Coup ? "Coup" : "Assassinate";
       const afterLoss = applyLoss(appendLog(state, `${state.players[pendingAction.sourcePlayerId]?.name ?? "Player"} resolves ${actionLabel} on ${state.players[pendingAction.targetPlayerId]?.name ?? "a player"}.`), pendingAction.targetPlayerId);
       if (afterLoss.currentPhase === GamePhase.LOSE_CARD_WINDOW) {
-        return { ...afterLoss, pendingAction };
+        return { ...afterLoss, pendingAction, pendingResolution: { kind: "advance_turn", sourcePlayerId: pendingAction.sourcePlayerId } };
       }
       return advanceTurn(afterLoss, pendingAction.sourcePlayerId);
     }

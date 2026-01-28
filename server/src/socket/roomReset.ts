@@ -41,6 +41,7 @@ export const restartGameState = (state: GameState): GameState => {
     currentPhase: GamePhase.ACTION_DECLARATION,
     isPaused: Boolean(pausedPlayer),
     pausedPlayerId: pausedPlayer?.id ?? "",
+    pendingResolution: null,
     pendingExchange: null,
   };
 };

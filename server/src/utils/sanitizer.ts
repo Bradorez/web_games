@@ -35,6 +35,7 @@ export const maskState = (
           options: state.pendingExchange.options.map((card) => ({ ...card })),
         }
       : null;
+  const pendingResolution = state.pendingResolution ? { ...state.pendingResolution } : null;
   const gameLog = state.gameLog.map((entry) => ({ ...entry }));
 
   for (const [playerId, player] of Object.entries(state.players)) {
@@ -45,11 +46,20 @@ export const maskState = (
     };
   }
 
+  const maskedDeck = showDeck
+    ? state.deck.map((card) => ({ ...card }))
+    : state.deck.map((_, index) => ({
+        id: `masked-deck-${index + 1}`,
+        type: CardType.Unknown,
+        isRevealed: false,
+      }));
+
   return {
     ...state,
-    deck: showDeck ? state.deck.map((card) => ({ ...card })) : [],
+    deck: maskedDeck,
     players: maskedPlayers,
     pendingAction,
+    pendingResolution,
     pendingExchange,
     gameLog,
   };

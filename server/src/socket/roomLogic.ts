@@ -131,6 +131,7 @@ export const startGameState = (state: GameState): GameState => {
     pausedPlayerId: "",
     currentPhase: GamePhase.ACTION_DECLARATION,
     turnPlayerId: state.turnPlayerId || state.hostPlayerId,
+    pendingResolution: null,
     pendingExchange: null,
   };
 };
