@@ -11,6 +11,10 @@ export const PlayerMat = ({
   isCurrentTurn,
 }: PlayerMatProps): JSX.Element => {
   const borderClass = isCurrentTurn ? "border-emerald-400" : "border-slate-700";
+  const displayCards = [
+    ...player.hand.map((card) => ({ card, isGraveyard: false })),
+    ...player.graveyard.map((card) => ({ card, isGraveyard: true })),
+  ];
 
   return (
     <div
@@ -28,20 +32,14 @@ export const PlayerMat = ({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-4">
-        {player.hand.map((card) => (
+      <div className="flex flex-row gap-4">
+        {displayCards.map(({ card, isGraveyard }) => (
           <Card
             key={card.id}
             id={card.id}
             type={card.type}
-            isFaceUp={card.type !== CardType.Unknown || card.isRevealed}
+            isFaceUp={isGraveyard || card.type !== CardType.Unknown || card.isRevealed}
           />
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-4 opacity-70">
-        {player.graveyard.map((card) => (
-          <Card key={card.id} id={card.id} type={card.type} isFaceUp={true} />
         ))}
       </div>
     </div>

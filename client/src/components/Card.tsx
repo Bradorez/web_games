@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { CardType } from "../../../shared/types";
 import cardBack from "../assets/cards/back.png";
+import assassinImage from "../assets/cards/assasin.png";
 
 interface CardProps {
   id: string;
@@ -26,7 +27,11 @@ export const Card = ({ id, type, isFaceUp, onClick }: CardProps): JSX.Element =>
       onClick={onClick}
     >
       {faceUp ? (
-        type
+        type === CardType.Assassin ? (
+          <img src={assassinImage} alt="Assassin" className="h-full w-full rounded-2xl object-cover" />
+        ) : (
+          type
+        )
       ) : (
         <img src={cardBack} alt="Card back" className="h-full w-full rounded-2xl object-cover" />
       )}
