@@ -2,7 +2,7 @@ import { ActionType, GamePhase, GameState } from "../../shared/types";
 import {
   ACTION_CLAIMS,
   advanceTurn,
-  applyCoins,
+  applyPotCoins,
 } from "./challengeHelpers";
 import { GameAction } from "./actionTypes";
 import { LossHandler, createPendingAction } from "./challengeResolution";
@@ -31,7 +31,7 @@ export const initiateActionFlow = (
     return state;
   }
 
-  if (action.type === ActionType.Income) return advanceTurn(appendLog(applyCoins(state, sourcePlayerId, 1), `${state.players[sourcePlayerId]?.name ?? "Player"} takes Income.`), sourcePlayerId);
+  if (action.type === ActionType.Income) return advanceTurn(appendLog(applyPotCoins(state, sourcePlayerId, 1), `${state.players[sourcePlayerId]?.name ?? "Player"} takes Income.`), sourcePlayerId);
 
   if (action.type === ActionType.ForeignAid) {
     return {
@@ -53,7 +53,7 @@ export const initiateActionFlow = (
       return state;
     }
 
-    const paidState = appendLog(applyCoins(state, sourcePlayerId, -COUP_COST), `${state.players[sourcePlayerId]?.name ?? "Player"} declares Coup on ${state.players[targetPlayerId]?.name ?? "a player"}.`);
+    const paidState = appendLog(applyPotCoins(state, sourcePlayerId, -COUP_COST), `${state.players[sourcePlayerId]?.name ?? "Player"} declares Coup on ${state.players[targetPlayerId]?.name ?? "a player"}.`);
     const pendingAction = createPendingAction(
       { ...action, targetPlayerId },
       sourcePlayerId
@@ -81,7 +81,7 @@ export const initiateActionFlow = (
       if (!sourcePlayer || sourcePlayer.coins < ASSASSINATE_COST) {
         return state;
       }
-      const paidState = appendLog(applyCoins(state, sourcePlayerId, -ASSASSINATE_COST), `${state.players[sourcePlayerId]?.name ?? "Player"} declares Assassinate on ${state.players[targetPlayerId]?.name ?? "a player"}.`);
+      const paidState = appendLog(applyPotCoins(state, sourcePlayerId, -ASSASSINATE_COST), `${state.players[sourcePlayerId]?.name ?? "Player"} declares Assassinate on ${state.players[targetPlayerId]?.name ?? "a player"}.`);
       return {
         ...paidState,
         currentPhase: GamePhase.CHALLENGE_WINDOW,

@@ -9,6 +9,7 @@ import {
   ACTION_CLAIMS,
   advanceTurn,
   applyCoins,
+  applyPotCoins,
 } from "./challengeHelpers";
 import { GameAction } from "./actionTypes";
 import { appendLog } from "./log";
@@ -38,12 +39,12 @@ export const resolveAction = (
   switch (pendingAction.actionType) {
     case ActionType.ForeignAid:
       return advanceTurn(
-        appendLog(applyCoins(state, pendingAction.sourcePlayerId, 2), `${state.players[pendingAction.sourcePlayerId]?.name ?? "Player"} gains 2 coins (Foreign Aid).`),
+        appendLog(applyPotCoins(state, pendingAction.sourcePlayerId, 2), `${state.players[pendingAction.sourcePlayerId]?.name ?? "Player"} gains 2 coins (Foreign Aid).`),
         pendingAction.sourcePlayerId
       );
     case ActionType.Tax:
       return advanceTurn(
-        appendLog(applyCoins(state, pendingAction.sourcePlayerId, 3), `${state.players[pendingAction.sourcePlayerId]?.name ?? "Player"} gains 3 coins (Tax).`),
+        appendLog(applyPotCoins(state, pendingAction.sourcePlayerId, 3), `${state.players[pendingAction.sourcePlayerId]?.name ?? "Player"} gains 3 coins (Tax).`),
         pendingAction.sourcePlayerId
       );
     case ActionType.Steal: {

@@ -56,11 +56,51 @@ export const applyCoins = (
   amount: number
 ): GameState => {
   const player = state.players[playerId];
-  if (!player) {
+  if (!player || amount === 0) {
     return state;
   }
 
   return updatePlayer(state, playerId, modifyCoins(player, amount));
+};
+
+export const applyPotCoins = (
+  state: GameState,
+  playerId: string,
+  amount: number
+): GameState => {
+  const player = state.players[playerId];
+  if (!player || amount === 0) {
+    return state;
+  }
+
+  if (amount > 0) {
+    const granted = Math.min(amount, Math.max(0, state.pot));
+    if (granted === 0) {
+      return state;
+    }
+    return {
+      ...state,
+      pot: state.pot - granted,
+      players: {
+        ...state.players,
+        [playerId]: modifyCoins(player, granted),
+      },
+    };
+  }
+
+  const debit = Math.min(-amount, player.coins);
+  if (debit === 0) {
+    return state;
+  }
+
+  return {
+    ...state,
+    pot: state.pot + debit,
+    players: {
+      ...state.players,
+      [playerId]: modifyCoins(player, -debit),
+    },
+  };
 };
 
 export const swapClaimedCard = (

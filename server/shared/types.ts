@@ -130,7 +130,7 @@ export interface PendingExchange {
 
 export interface PendingResolution {
   /** Whether to resolve the pending action or just advance the turn. */
-  kind: "resolve_action" | "advance_turn";
+  kind: "resolve_action" | "advance_turn" | "open_block_window";
   /** The player id to use when advancing the turn. */
   sourcePlayerId: string;
 }

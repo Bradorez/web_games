@@ -1,6 +1,6 @@
 import { GamePhase, GameState, Player } from "../../shared/types";
 import { advanceTurn, clearPending, updatePlayer } from "./challengeHelpers";
-import { LossHandler, resolveAction } from "./challengeResolution";
+import { CHALLENGE_DURATION_MS, LossHandler, resolveAction } from "./challengeResolution";
 import { appendLog } from "./log";
 
 export const handleLoseCardChoiceFlow = (
@@ -56,6 +56,18 @@ export const handleLoseCardChoiceFlow = (
   }
   if (resolution.kind === "resolve_action" && updatedState.pendingAction) {
     return resolveAction(clearPending(clearedResolution), updatedState.pendingAction, applyLoss);
+  }
+  if (resolution.kind === "open_block_window" && updatedState.pendingAction) {
+    return {
+      ...clearPending(clearedResolution),
+      currentPhase: GamePhase.BLOCK_WINDOW,
+      pendingAction: {
+        ...updatedState.pendingAction,
+        blockerId: "",
+        passedPlayerIds: [],
+        timerExpiresAt: Date.now() + CHALLENGE_DURATION_MS,
+      },
+    };
   }
   return clearedResolution;
 };

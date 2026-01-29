@@ -1,10 +1,12 @@
 import { GamePhase, GameState } from "../../shared/types";
 import {
+  BLOCKABLE_ACTIONS,
   advanceTurn,
   swapClaimedCard,
 } from "./challengeHelpers";
 import {
   LossHandler,
+  CHALLENGE_DURATION_MS,
   resolveAction,
 } from "./challengeResolution";
 import { appendLog } from "./log";
@@ -44,10 +46,28 @@ export const handleChallengeFlow = (
     );
     const afterLoss = applyLoss(swappedState, challengerId);
     if (afterLoss.currentPhase === GamePhase.LOSE_CARD_WINDOW) {
-      return { ...afterLoss, pendingAction, pendingResolution: { kind: "resolve_action", sourcePlayerId: pendingAction.sourcePlayerId } };
+      const kind =
+        state.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW
+          ? "advance_turn"
+          : BLOCKABLE_ACTIONS.has(pendingAction.actionType)
+            ? "open_block_window"
+            : "resolve_action";
+      return { ...afterLoss, pendingAction, pendingResolution: { kind, sourcePlayerId: pendingAction.sourcePlayerId } };
     }
     if (state.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW) {
       return advanceTurn(afterLoss, pendingAction.sourcePlayerId);
+    }
+    if (BLOCKABLE_ACTIONS.has(pendingAction.actionType)) {
+      return {
+        ...afterLoss,
+        currentPhase: GamePhase.BLOCK_WINDOW,
+        pendingAction: {
+          ...pendingAction,
+          blockerId: "",
+          passedPlayerIds: [],
+          timerExpiresAt: Date.now() + CHALLENGE_DURATION_MS,
+        },
+      };
     }
     return resolveAction(afterLoss, pendingAction, applyLoss);
   }
