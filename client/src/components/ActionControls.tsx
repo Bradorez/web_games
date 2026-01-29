@@ -29,6 +29,15 @@ export const ActionControls = ({ gameState, myPlayerId, onAction }: ActionContro
       ? pendingAction.blockerId
       : pendingAction?.sourcePlayerId ?? "";
   const isEligibleResponder = Boolean(isAlive && pendingAction && myPlayerId !== excludedId);
+  const isEligibleBlocker = Boolean(
+    isAlive &&
+      pendingAction &&
+      ((pendingAction.actionType === ActionType.ForeignAid &&
+        pendingAction.sourcePlayerId !== myPlayerId) ||
+        ((pendingAction.actionType === ActionType.Steal ||
+          pendingAction.actionType === ActionType.Assassinate) &&
+          pendingAction.targetPlayerId === myPlayerId))
+  );
   const pendingExchange = gameState.pendingExchange;
   const blockableActions = new Set([ActionType.ForeignAid, ActionType.Assassinate, ActionType.Steal]);
   const isBlockable = pendingAction ? blockableActions.has(pendingAction.actionType) : false;
@@ -45,10 +54,32 @@ export const ActionControls = ({ gameState, myPlayerId, onAction }: ActionContro
     }
     return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for {hostName} to start the game...</div>;
   }
-  if (gameState.currentPhase === GamePhase.CHALLENGE_WINDOW || gameState.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW) {
-    if (gameState.currentPhase === GamePhase.CHALLENGE_WINDOW && isBlockable && pendingAction) {
-      return <BlockControls pendingAction={pendingAction} myPlayerId={myPlayerId} hasPassed={hasPassed} isAlive={isAlive} onBlock={(claimedCard) => onAction({ event: "block", claimedCard })} onPass={() => onAction({ event: "pass" })} onChallenge={() => onAction({ event: "challenge" })} showChallenge={true} />;
+  if (gameState.currentPhase === GamePhase.CHALLENGE_WINDOW) {
+    if (isBlockable && pendingAction) {
+      if (isEligibleBlocker && !hasPassed) {
+        return (
+          <BlockControls
+            pendingAction={pendingAction}
+            myPlayerId={myPlayerId}
+            hasPassed={hasPassed}
+            isAlive={isAlive}
+            onBlock={(claimedCard) => onAction({ event: "block", claimedCard })}
+            onPass={() => onAction({ event: "pass" })}
+            showChallenge={false}
+          />
+        );
+      }
+      if (!isEligibleResponder || hasPassed) {
+        return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
+      }
+      return <div className="flex flex-wrap gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4"><button className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white" onClick={() => onAction({ event: "challenge" })} type="button">Challenge</button><button className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-100" onClick={() => onAction({ event: "pass" })} type="button">Pass</button></div>;
     }
+    if (!isEligibleResponder || hasPassed) {
+      return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
+    }
+    return <div className="flex flex-wrap gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4"><button className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white" onClick={() => onAction({ event: "challenge" })} type="button">Challenge</button><button className="rounded-lg bg-slate-700 px-4 py-2 text-sm font-semibold text-slate-100" onClick={() => onAction({ event: "pass" })} type="button">Pass</button></div>;
+  }
+  if (gameState.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW) {
     if (!isEligibleResponder || hasPassed) {
       return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
     }
@@ -71,7 +102,10 @@ export const ActionControls = ({ gameState, myPlayerId, onAction }: ActionContro
     if (isMyTurn) {
       return <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300"><span>Waiting for blocks...</span></div>;
     }
-    return <BlockControls pendingAction={pendingAction} myPlayerId={myPlayerId} hasPassed={hasPassed} isAlive={isAlive} onBlock={(claimedCard) => onAction({ event: "block", claimedCard })} onPass={() => onAction({ event: "pass" })} />;
+    if (!isEligibleBlocker || hasPassed) {
+      return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
+    }
+    return <BlockControls pendingAction={pendingAction} myPlayerId={myPlayerId} hasPassed={hasPassed} isAlive={isAlive} onBlock={(claimedCard) => onAction({ event: "block", claimedCard })} onPass={() => onAction({ event: "pass" })} showPass={isEligibleBlocker} />;
   }
   if (gameState.currentPhase !== GamePhase.ACTION_DECLARATION) {
     return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for {currentPlayerName}...</div>;

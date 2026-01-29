@@ -27,7 +27,19 @@ const canBlockAction = (
   if (!state.players[blockerId]?.isAlive) {
     return { ok: false, allowed };
   }
-  return { ok: pending.sourcePlayerId !== blockerId, allowed };
+  if (pending.sourcePlayerId === blockerId) {
+    return { ok: false, allowed };
+  }
+  if (pending.actionType === ActionType.ForeignAid) {
+    return { ok: true, allowed };
+  }
+  if (
+    pending.actionType === ActionType.Steal ||
+    pending.actionType === ActionType.Assassinate
+  ) {
+    return { ok: pending.targetPlayerId === blockerId, allowed };
+  }
+  return { ok: false, allowed };
 };
 
 export const handleBlockFlow = (

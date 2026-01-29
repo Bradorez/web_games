@@ -177,6 +177,18 @@ export const getEligiblePassers = (
   const aliveIds = Object.values(state.players)
     .filter((player) => player.isAlive)
     .map((player) => player.id);
+  if (state.currentPhase === GamePhase.BLOCK_WINDOW) {
+    if (pendingAction.actionType === ActionType.ForeignAid) {
+      return aliveIds.filter((id) => id !== pendingAction.sourcePlayerId);
+    }
+    if (
+      pendingAction.actionType === ActionType.Steal ||
+      pendingAction.actionType === ActionType.Assassinate
+    ) {
+      return aliveIds.filter((id) => id === pendingAction.targetPlayerId);
+    }
+    return [];
+  }
   const excludedId =
     state.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW &&
     pendingAction.blockerId

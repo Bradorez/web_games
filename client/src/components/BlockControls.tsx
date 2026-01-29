@@ -28,8 +28,18 @@ const getBlockOptions = (actionType: ActionType): { card: CardType; label: strin
   return [];
 };
 
-const canBlock = (pending: PendingAction, playerId: string): boolean =>
-  pending.sourcePlayerId !== playerId;
+const canBlock = (pending: PendingAction, playerId: string): boolean => {
+  if (pending.sourcePlayerId === playerId) {
+    return false;
+  }
+  if (pending.actionType === ActionType.ForeignAid) {
+    return true;
+  }
+  if (pending.actionType === ActionType.Steal || pending.actionType === ActionType.Assassinate) {
+    return pending.targetPlayerId === playerId;
+  }
+  return false;
+};
 
 export const BlockControls = ({
   pendingAction,
@@ -45,16 +55,13 @@ export const BlockControls = ({
   const eligible = isAlive && canBlock(pendingAction, myPlayerId);
   const options = getBlockOptions(pendingAction.actionType);
 
-  if (!eligible) {
-    return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for blocks...</div>;
-  }
   if (hasPassed) {
     return <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">Waiting for other players...</div>;
   }
 
   return (
     <div className="flex flex-wrap gap-3 rounded-xl border border-slate-800 bg-slate-900/70 p-4">
-      {options.map((option) => (
+      {eligible && options.map((option) => (
         <button key={option.card} className={`rounded-lg px-4 py-2 text-sm font-semibold ${option.className}`} onClick={() => onBlock(option.card)} type="button">{option.label}</button>
       ))}
       {showChallenge && onChallenge && <button className="rounded-lg bg-rose-500 px-4 py-2 text-sm font-semibold text-white" onClick={onChallenge} type="button">Challenge</button>}
