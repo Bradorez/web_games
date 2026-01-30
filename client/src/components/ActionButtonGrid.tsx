@@ -10,14 +10,14 @@ export const ActionButtonGrid = ({
   hasTargets,
   onSelect,
 }: ActionButtonGridProps): JSX.Element => (
-  <div className="flex flex-wrap gap-2">
+  <div className="grid grid-cols-3 gap-2">
     {actionButtons.map((action) => {
       const needsTarget = targetActions.has(action.type);
       const isDisabled = needsTarget && !hasTargets;
       return (
         <button
           key={action.type}
-          className={`rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wide ${action.className} ${isDisabled ? "cursor-not-allowed opacity-40" : ""}`}
+          className={`w-full min-h-[44px] rounded-lg px-2 py-2 text-[11px] font-semibold uppercase leading-snug tracking-wide text-center whitespace-normal ${action.className} ${isDisabled ? "cursor-not-allowed opacity-40" : ""}`}
           onClick={() => {
             if (isDisabled) return;
             onSelect(action.type, needsTarget);

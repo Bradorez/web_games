@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { CardType } from "../../../shared/types";
 import cardBack from "../assets/cards/back.png";
 import assassinImage from "../assets/cards/assasin.png";
+import dukeImage from "../assets/cards/duke.png";
 
 interface CardProps {
   id: string;
@@ -16,7 +17,7 @@ const getFaceUp = (type: CardType, isFaceUp: boolean): boolean =>
 export const Card = ({ id, type, isFaceUp, onClick }: CardProps): JSX.Element => {
   const faceUp = getFaceUp(type, isFaceUp);
   const baseClasses =
-    "flex h-52 w-36 items-center justify-center rounded-2xl border text-lg font-semibold shadow";
+    "flex h-56 w-40 items-center justify-center rounded-lg border text-lg font-semibold shadow-lg";
   const frontClasses = "bg-amber-100 border-amber-300 text-slate-900";
   const backClasses = "bg-slate-900 border-slate-700 text-slate-200";
 
@@ -28,12 +29,14 @@ export const Card = ({ id, type, isFaceUp, onClick }: CardProps): JSX.Element =>
     >
       {faceUp ? (
         type === CardType.Assassin ? (
-          <img src={assassinImage} alt="Assassin" className="h-full w-full rounded-2xl object-cover" />
+          <img src={assassinImage} alt="Assassin" className="h-full w-full rounded-lg object-cover" />
+        ) : type === CardType.Duke ? (
+          <img src={dukeImage} alt="Duke" className="h-full w-full rounded-lg object-cover" />
         ) : (
           type
         )
       ) : (
-        <img src={cardBack} alt="Card back" className="h-full w-full rounded-2xl object-cover" />
+        <img src={cardBack} alt="Card back" className="h-full w-full rounded-lg object-cover" />
       )}
     </motion.div>
   );
