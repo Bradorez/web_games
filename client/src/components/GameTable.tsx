@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { CardType, GameState } from "../../../shared/types";
 import { Card } from "./Card";
 import { GameLog } from "./GameLog";
@@ -13,51 +13,7 @@ interface GameTableProps {
 export const GameTable = ({ gameState, localPlayerId, actionControls }: GameTableProps): JSX.Element => {
   const localPlayer = gameState.players[localPlayerId];
   const otherPlayers = Object.values(gameState.players).filter((player) => player.id !== localPlayerId);
-  const count = Math.max((localPlayer ? 1 : 0) + otherPlayers.length, 1);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [layout, setLayout] = useState({
-    centerX: 0.45,
-    centerY: 0.55,
-    rx: 320,
-    ry: 240,
-    scale: 1,
-  });
-
-  useEffect(() => {
-    const node = containerRef.current;
-    if (!node) return;
-    const observer = new ResizeObserver((entries) => {
-      const rect = entries[0]?.contentRect;
-      if (!rect) return;
-      const leftSafe = 160;
-      const rightSafe = 160;
-      const topSafe = 110;
-      const bottomSafe = 80;
-      const usableWidth = Math.max(0, rect.width - leftSafe - rightSafe);
-      const usableHeight = Math.max(0, rect.height - topSafe - bottomSafe);
-      const centerX = 0.5;
-      const centerY = (topSafe + usableHeight / 2) / rect.height;
-      const maxRx = Math.max(280, usableWidth * 0.85);
-      const maxRy = Math.max(180, usableHeight * 0.45);
-      const matWidth = 460;
-      const matHeight = 280;
-      const angle = Math.PI / Math.max(2, count);
-      const sinAngle = Math.sin(angle) || 1;
-      const scaleLimitX = (2 * sinAngle * maxRx) / matWidth;
-      const scaleLimitY = (2 * sinAngle * maxRy) / matHeight;
-      const baseScale = count <= 3 ? 1 : count <= 5 ? 0.96 : 0.92;
-      const scale = Math.max(0.85, Math.min(baseScale, scaleLimitX, scaleLimitY));
-      setLayout({
-        centerX,
-        centerY,
-        rx: maxRx,
-        ry: maxRy,
-        scale,
-      });
-    });
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
 
   return (
     <div className="relative h-full w-full text-slate-100">
