@@ -1,8 +1,11 @@
 import { motion } from "framer-motion";
 import { CardType } from "../../../shared/types";
 import cardBack from "../assets/cards/back.png";
-import assassinImage from "../assets/cards/assasin.png";
-import dukeImage from "../assets/cards/duke.png";
+import assassinImage from "../assets/cards/assasin2.png";
+import dukeImage from "../assets/cards/duke2.png";
+import contessaImage from "../assets/cards/contessa2.png";
+import ambassadorImage from "../assets/cards/ambassador.png";
+import captainImage from "../assets/cards/captain.png";
 
 interface CardProps {
   id: string;
@@ -32,6 +35,12 @@ export const Card = ({ id, type, isFaceUp, onClick }: CardProps): JSX.Element =>
           <img src={assassinImage} alt="Assassin" className="h-full w-full rounded-lg object-cover" />
         ) : type === CardType.Duke ? (
           <img src={dukeImage} alt="Duke" className="h-full w-full rounded-lg object-cover" />
+        ) : type === CardType.Ambassador ? (
+          <img src={ambassadorImage} alt="Ambassador" className="h-full w-full rounded-lg object-cover" />
+        ) : type === CardType.Captain ? (
+          <img src={captainImage} alt="Captain" className="h-full w-full rounded-lg object-cover" />
+        ) : type === CardType.Contessa ? (
+          <img src={contessaImage} alt="Contessa" className="h-full w-full rounded-lg object-cover" />
         ) : (
           type
         )

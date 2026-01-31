@@ -15,16 +15,14 @@ export const GameTable = ({ gameState, localPlayerId, actionControls }: GameTabl
   const otherPlayers = Object.values(gameState.players).filter((player) => player.id !== localPlayerId);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [uiScale, setUiScale] = useState(1);
+  const sideInset = "-4%";
+  const topRowY = "-4%";
+  const sideRowY = "60%";
+  const bottomRowY = "-4%";
+  const logInset = "-4%";
 
   useEffect(() => {
-    const updateScale = () => {
-      const ratio = window.devicePixelRatio || 1;
-      const next = Math.max(0.85, Math.min(1, 2 / ratio));
-      setUiScale(next);
-    };
-    updateScale();
-    window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
+    setUiScale(0.9);
   }, []);
 
   return (
@@ -34,46 +32,46 @@ export const GameTable = ({ gameState, localPlayerId, actionControls }: GameTabl
       <div className="absolute inset-0 origin-center" style={{ transform: `scale(${uiScale})` }}>
       {otherPlayers.length === 5 ? (
         <>
-          <div className="absolute left-4 top-[58%] -translate-y-1/2">
+          <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
             <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} />
           </div>
-          <div className="absolute left-1/2 top-10 flex -translate-x-1/2 gap-10">
+          <div className="absolute left-1/2 flex -translate-x-1/2" style={{ top: topRowY, gap: "3%" }}>
             {otherPlayers.slice(1, 4).map((player) => (
               <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} />
             ))}
           </div>
-          <div className="absolute right-4 top-[58%] -translate-y-1/2">
+          <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
             <PlayerMat player={otherPlayers[4]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[4].id} />
           </div>
         </>
       ) : otherPlayers.length === 4 ? (
         <>
-          <div className="absolute left-4 top-[58%] -translate-y-1/2">
+          <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
             <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} />
           </div>
-          <div className="absolute left-1/2 top-10 flex -translate-x-1/2 gap-10">
+          <div className="absolute left-1/2 flex -translate-x-1/2" style={{ top: topRowY, gap: "3%" }}>
             {otherPlayers.slice(1, 3).map((player) => (
               <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} />
             ))}
           </div>
-          <div className="absolute right-4 top-[58%] -translate-y-1/2">
+          <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
             <PlayerMat player={otherPlayers[3]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[3].id} />
           </div>
         </>
       ) : otherPlayers.length === 3 ? (
         <>
-          <div className="absolute left-4 top-1/2 -translate-y-1/2">
+          <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
             <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} />
           </div>
-          <div className="absolute left-1/2 top-10 -translate-x-1/2">
+          <div className="absolute left-1/2 -translate-x-1/2" style={{ top: topRowY }}>
             <PlayerMat player={otherPlayers[1]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[1].id} />
           </div>
-          <div className="absolute right-4 top-1/2 -translate-y-1/2">
+          <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
             <PlayerMat player={otherPlayers[2]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[2].id} />
           </div>
         </>
       ) : (
-        <div className="absolute left-0 right-0 top-4 flex justify-center gap-16">
+        <div className="absolute left-0 right-0 flex justify-center" style={{ top: topRowY, gap: "4%" }}>
           {otherPlayers.map((player) => (
             <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} />
           ))}
@@ -98,11 +96,11 @@ export const GameTable = ({ gameState, localPlayerId, actionControls }: GameTabl
         <div className="rounded-full bg-amber-200 px-6 py-3 text-base font-semibold text-slate-900 shadow">Pot: {gameState.pot}</div>
       </div>
 
-      <div className="absolute bottom-4 left-4 z-20 w-64 max-h-[30vh] overflow-y-auto">
+      <div className="absolute z-20 w-64 max-h-[30vh] overflow-y-auto" style={{ bottom: logInset, left: logInset }}>
         <GameLog entries={gameState.gameLog} />
       </div>
 
-      <div className="absolute bottom-4 left-0 right-0 z-20 flex items-end justify-center gap-8">
+      <div className="absolute left-0 right-0 z-20 flex items-end justify-center gap-12" style={{ bottom: bottomRowY }}>
         {localPlayer && (
           <div ref={containerRef}>
             <PlayerMat player={localPlayer} isCurrentTurn={gameState.turnPlayerId === localPlayer.id} />
