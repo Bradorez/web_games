@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CardType, GameState } from "../../../shared/types";
 import { Card } from "./Card";
 import { GameLog } from "./GameLog";
@@ -14,11 +14,24 @@ export const GameTable = ({ gameState, localPlayerId, actionControls }: GameTabl
   const localPlayer = gameState.players[localPlayerId];
   const otherPlayers = Object.values(gameState.players).filter((player) => player.id !== localPlayerId);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const [uiScale, setUiScale] = useState(1);
+
+  useEffect(() => {
+    const updateScale = () => {
+      const ratio = window.devicePixelRatio || 1;
+      const next = Math.max(0.85, Math.min(1, 2 / ratio));
+      setUiScale(next);
+    };
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, []);
 
   return (
     <div className="relative h-full w-full text-slate-100">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-slate-950" />
 
+      <div className="absolute inset-0 origin-center" style={{ transform: `scale(${uiScale})` }}>
       {otherPlayers.length === 5 ? (
         <>
           <div className="absolute left-4 top-[58%] -translate-y-1/2">
@@ -100,6 +113,7 @@ export const GameTable = ({ gameState, localPlayerId, actionControls }: GameTabl
             {actionControls}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
