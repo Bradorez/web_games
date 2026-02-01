@@ -4,11 +4,13 @@ import { Card } from "./Card";
 interface PlayerMatProps {
   player: Player;
   isCurrentTurn: boolean;
+  isLocalView?: boolean;
 }
 
 export const PlayerMat = ({
   player,
   isCurrentTurn,
+  isLocalView = false,
 }: PlayerMatProps): JSX.Element => {
   const borderClass = isCurrentTurn ? "border-emerald-400" : "border-slate-700";
   const displayCards = [
@@ -39,6 +41,8 @@ export const PlayerMat = ({
             id={card.id}
             type={card.type}
             isFaceUp={isGraveyard || card.type !== CardType.Unknown || card.isRevealed}
+            dimmed={Boolean(isLocalView && isGraveyard)}
+            showDeadIcon={Boolean(isGraveyard)}
           />
         ))}
       </div>

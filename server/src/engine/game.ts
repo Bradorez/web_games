@@ -1,11 +1,11 @@
 import { GamePhase, GameState } from "../../shared/types";
 import { createDeck, shuffle } from "./deck";
-import { createPlayer } from "./player";
+import { STARTING_COINS, createPlayer } from "./player";
 import { applyPotCoins } from "./challengeHelpers";
 import { getNextTurnPlayerId } from "./turn";
 import { initiateAction, type GameAction } from "./challenge";
 
-const STARTING_POT = 50;
+const TOTAL_COINS = 50;
 
 export const initializeGame = (playerIds: string[]): GameState => {
   const players: Record<string, Player> = {};
@@ -14,12 +14,14 @@ export const initializeGame = (playerIds: string[]): GameState => {
     players[id] = createPlayer(id, id);
   }
 
+  const startingPot = Math.max(0, TOTAL_COINS - playerIds.length * STARTING_COINS);
+
   return {
     deck: shuffle(createDeck()),
     players,
     turnPlayerId: playerIds[0] ?? "",
     currentPhase: GamePhase.WAITING_FOR_PLAYERS,
-    pot: STARTING_POT,
+    pot: startingPot,
     hostPlayerId: playerIds[0] ?? "",
     isStarted: false,
     isGameOver: false,

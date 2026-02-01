@@ -68,6 +68,7 @@ export const applyPotCoins = (
   playerId: string,
   amount: number
 ): GameState => {
+  const TOTAL_COINS = 50;
   const player = state.players[playerId];
   if (!player || amount === 0) {
     return state;
@@ -88,7 +89,8 @@ export const applyPotCoins = (
     };
   }
 
-  const debit = Math.min(-amount, player.coins);
+  const capacity = Math.max(0, TOTAL_COINS - state.pot);
+  const debit = Math.min(-amount, player.coins, capacity);
   if (debit === 0) {
     return state;
   }

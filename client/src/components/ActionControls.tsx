@@ -67,7 +67,8 @@ export const ActionControls = ({ gameState, myPlayerId, onAction }: ActionContro
               isAlive={isAlive}
               onBlock={(claimedCard) => onAction({ event: "block", claimedCard })}
               onPass={() => onAction({ event: "pass" })}
-              showChallenge={false}
+              onChallenge={() => onAction({ event: "challenge" })}
+              showChallenge={true}
             />
           </div>
         );

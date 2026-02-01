@@ -1,6 +1,6 @@
 import { Player } from "../../shared/types";
 
-const STARTING_COINS = 2;
+export const STARTING_COINS = 2;
 const STARTING_LIVES = 2;
 
 export const createPlayer = (

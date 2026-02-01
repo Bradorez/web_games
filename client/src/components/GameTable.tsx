@@ -96,14 +96,14 @@ export const GameTable = ({ gameState, localPlayerId, actionControls }: GameTabl
         <div className="rounded-full bg-amber-200 px-6 py-3 text-base font-semibold text-slate-900 shadow">Pot: {gameState.pot}</div>
       </div>
 
-      <div className="absolute z-20 w-64 max-h-[30vh] overflow-y-auto" style={{ bottom: logInset, left: logInset }}>
+      <div className="absolute z-30 w-64 max-h-[30vh] pointer-events-auto" style={{ bottom: logInset, left: logInset }}>
         <GameLog entries={gameState.gameLog} />
       </div>
 
       <div className="absolute left-0 right-0 z-20 flex items-end justify-center gap-12" style={{ bottom: bottomRowY }}>
         {localPlayer && (
           <div ref={containerRef}>
-            <PlayerMat player={localPlayer} isCurrentTurn={gameState.turnPlayerId === localPlayer.id} />
+            <PlayerMat player={localPlayer} isCurrentTurn={gameState.turnPlayerId === localPlayer.id} isLocalView />
           </div>
         )}
         {actionControls && (

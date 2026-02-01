@@ -3,11 +3,13 @@ import { createPlayer } from "../engine/player";
 import { initializeGame } from "../engine/game";
 import { dealInitialHands } from "../engine/deal";
 import { appendLog } from "../engine/log";
+import { STARTING_COINS } from "../engine/player";
 
 const pickHostId = (state: GameState, playerIds: string[]): string =>
   state.hostPlayerId && playerIds.includes(state.hostPlayerId)
     ? state.hostPlayerId
     : playerIds[0] ?? "";
+const TOTAL_COINS = 50;
 
 export const restartGameState = (state: GameState): GameState => {
   const playerIds = Object.keys(state.players);
@@ -31,8 +33,10 @@ export const restartGameState = (state: GameState): GameState => {
   const dealtState = dealInitialHands(
     appendLog({ ...baseState, players }, "The game restarts. Cards have been dealt.")
   );
+  const startingPot = Math.max(0, TOTAL_COINS - playerIds.length * STARTING_COINS);
   return {
     ...dealtState,
+    pot: startingPot,
     hostPlayerId,
     turnPlayerId: hostPlayerId || playerIds[0] || "",
     isStarted: true,

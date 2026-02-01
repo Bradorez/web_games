@@ -6,6 +6,15 @@ import { appendLog } from "../engine/log";
 
 const createBotId = (seed: string, index: number): string =>
   `bot-${seed}-${index}-${Math.random().toString(16).slice(2, 6)}`;
+const TOTAL_COINS = 50;
+
+const calculatePot = (players: GameState["players"]): number => {
+  const totalOnPlayers = Object.values(players).reduce(
+    (sum, player) => sum + player.coins,
+    0
+  );
+  return Math.max(0, TOTAL_COINS - totalOnPlayers);
+};
 
 export const createRoomState = (
   roomId: string,
@@ -34,6 +43,7 @@ export const createRoomState = (
     isPaused: false,
     pausedPlayerId: "",
     players,
+    pot: calculatePot(players),
     gameLog: baseState.gameLog,
   };
 };
@@ -48,12 +58,15 @@ export const upsertPlayer = (
     ? { ...existing, name, isConnected: true }
     : createPlayer(playerId, name);
 
+  const nextPlayers = {
+    ...state.players,
+    [playerId]: player,
+  };
+
   return {
     ...state,
-    players: {
-      ...state.players,
-      [playerId]: player,
-    },
+    players: nextPlayers,
+    pot: state.isStarted ? state.pot : calculatePot(nextPlayers),
   };
 };
 
@@ -124,6 +137,7 @@ export const startGameState = (state: GameState): GameState => {
   );
   return {
     ...dealtState,
+    pot: calculatePot(dealtState.players),
     isStarted: true,
     isGameOver: false,
     winnerPlayerId: "",
