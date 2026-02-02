@@ -26,6 +26,8 @@ export const PlayerMat = ({
   const matRef = useRef<HTMLDivElement | null>(null);
   const [dealOffset, setDealOffset] = useState<{ x: number; y: number } | null>(null);
   const lastDealTokenRef = useRef(0);
+  const prevGraveyardIdsRef = useRef(new Set<string>());
+  const [flipPulse, setFlipPulse] = useState<Record<string, number>>({});
   const displayCards = [
     ...player.hand.map((card) => ({ card, isGraveyard: false })),
     ...player.graveyard.map((card) => ({ card, isGraveyard: true })),
@@ -42,6 +44,28 @@ export const PlayerMat = ({
     const matCenterY = rect.top + rect.height / 2;
     setDealOffset({ x: deckCenterX - matCenterX, y: deckCenterY - matCenterY });
   }, [deckRect]);
+
+  useEffect(() => {
+    const prev = prevGraveyardIdsRef.current;
+    const next = new Set(player.graveyard.map((card) => card.id));
+    const newlyDead: string[] = [];
+    next.forEach((id) => {
+      if (!prev.has(id)) {
+        newlyDead.push(id);
+      }
+    });
+    if (newlyDead.length > 0) {
+      const stamp = Date.now();
+      setFlipPulse((current) => {
+        const updated = { ...current };
+        newlyDead.forEach((id) => {
+          updated[id] = stamp;
+        });
+        return updated;
+      });
+    }
+    prevGraveyardIdsRef.current = next;
+  }, [player.graveyard]);
 
 
   return (
@@ -70,26 +94,50 @@ export const PlayerMat = ({
           const scaledOffset = dealOffset
             ? { x: dealOffset.x / uiScale, y: dealOffset.y / uiScale }
             : null;
-          const initial = shouldAnimateDeal
+          const flipKey = flipPulse[card.id] ?? 0;
+          const isFlipping = flipKey > 0;
+          const initial = shouldAnimateDeal && !isGraveyard
             ? scaledOffset
               ? { x: scaledOffset.x, y: scaledOffset.y, opacity: 0, scale: 0.6 }
               : { y: -120, opacity: 0, scale: 0.6 }
             : false;
+          const transition = isFlipping
+            ? { duration: 0.5, ease: "easeOut" }
+            : { duration: 1.2, delay: 0.2 + (dealBaseIndex + index) * 0.45, ease: [0.22, 1, 0.36, 1] };
+          const rotateY = isGraveyard ? 180 : 0;
           return (
             <motion.div
-              key={`${card.id}-${dealToken}`}
+              key={`${card.id}-${dealToken}-${flipKey}`}
               layout={false}
-              initial={initial}
-              animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-              transition={{ duration: 1.2, delay: 0.2 + (dealBaseIndex + index) * 0.45, ease: [0.22, 1, 0.36, 1] }}
+              initial={isFlipping ? { rotateY: 0 } : initial}
+              animate={{
+                x: 0,
+                y: 0,
+                opacity: 1,
+                scale: 1,
+                rotateY,
+              }}
+              transition={transition}
+              style={{ transformStyle: "preserve-3d", perspective: 900 }}
             >
-              <Card
-                id={card.id}
-                type={card.type}
-                isFaceUp={isGraveyard || card.type !== CardType.Unknown || card.isRevealed}
-                dimmed={Boolean(isLocalView && isGraveyard)}
-                showDeadIcon={Boolean(isGraveyard)}
-              />
+              <div style={{ backfaceVisibility: "hidden" }}>
+                <Card
+                  id={card.id}
+                  type={card.type}
+                  isFaceUp={card.type !== CardType.Unknown || card.isRevealed}
+                  dimmed={false}
+                  showDeadIcon={false}
+                />
+              </div>
+              <div style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", position: "absolute", inset: 0 }}>
+                <Card
+                  id={`${card.id}-dead`}
+                  type={card.type}
+                  isFaceUp={true}
+                  dimmed={Boolean(isLocalView && isGraveyard)}
+                  showDeadIcon={Boolean(isGraveyard)}
+                />
+              </div>
             </motion.div>
           );
         })}
