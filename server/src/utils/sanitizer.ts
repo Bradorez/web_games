@@ -37,6 +37,7 @@ export const maskState = (
       : null;
   const pendingResolution = state.pendingResolution ? { ...state.pendingResolution } : null;
   const gameLog = state.gameLog.map((entry) => ({ ...entry }));
+  const lastReveal = state.lastReveal ? { ...state.lastReveal } : null;
 
   for (const [playerId, player] of Object.entries(state.players)) {
     maskedPlayers[playerId] = {
@@ -61,6 +62,7 @@ export const maskState = (
     pendingAction,
     pendingResolution,
     pendingExchange,
+    lastReveal,
     gameLog,
   };
 };

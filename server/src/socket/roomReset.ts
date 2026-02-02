@@ -47,5 +47,6 @@ export const restartGameState = (state: GameState): GameState => {
     pausedPlayerId: pausedPlayer?.id ?? "",
     pendingResolution: null,
     pendingExchange: null,
+    lastReveal: null,
   };
 };

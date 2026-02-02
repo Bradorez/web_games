@@ -20,8 +20,12 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
   const [dealToken, setDealToken] = useState(0);
   const [uiScale, setUiScale] = useState(1);
   const [isDealing, setIsDealing] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
   const lastDealIdRef = useRef<string | null>(null);
   const lastDealingTokenRef = useRef<number>(0);
+  const lastRevealRef = useRef<number>(0);
+  const prevIsStartedRef = useRef(false);
+  const mountTimeRef = useRef<number>(Date.now());
   const sideInset = "-4%";
   const topRowY = "-4%";
   const sideRowY = "60%";
@@ -47,6 +51,7 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
   }, []);
 
   useEffect(() => {
+    prevIsStartedRef.current = gameState.isStarted;
     if (!gameState.isStarted || !roomId) return;
     const dealEntry = [...gameState.gameLog]
       .reverse()
@@ -81,6 +86,22 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
     return () => window.clearTimeout(timeoutId);
   }, [dealToken, gameState.players]);
 
+  useEffect(() => {
+    const reveal = gameState.lastReveal;
+    if (!reveal) return;
+    if (reveal.timestamp < mountTimeRef.current) return;
+    if (lastRevealRef.current === reveal.timestamp) return;
+    lastRevealRef.current = reveal.timestamp;
+    setIsRevealing(true);
+    const timeoutId = window.setTimeout(() => setIsRevealing(false), 3000);
+    return () => window.clearTimeout(timeoutId);
+  }, [gameState.lastReveal]);
+
+  const revealEvent =
+    gameState.lastReveal && gameState.lastReveal.timestamp >= mountTimeRef.current
+      ? gameState.lastReveal
+      : null;
+
   return (
     <div className="relative h-full w-full text-slate-100">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-slate-800 via-slate-900 to-slate-950" />
@@ -105,47 +126,47 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
         return otherPlayers.length === 5 ? (
         <>
           <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} />
+            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} />
           </div>
           <div className="absolute left-1/2 flex -translate-x-1/2" style={{ top: topRowY, gap: "3%" }}>
             {otherPlayers.slice(1, 4).map((player) => (
-              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} />
+              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} />
             ))}
           </div>
           <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[4]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[4].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[4].id)} />
+            <PlayerMat player={otherPlayers[4]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[4].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[4].id)} revealEvent={revealEvent} />
           </div>
         </>
       ) : otherPlayers.length === 4 ? (
         <>
           <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} />
+            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} />
           </div>
           <div className="absolute left-1/2 flex -translate-x-1/2" style={{ top: topRowY, gap: "3%" }}>
             {otherPlayers.slice(1, 3).map((player) => (
-              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} />
+              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} />
             ))}
           </div>
           <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[3]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[3].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[3].id)} />
+            <PlayerMat player={otherPlayers[3]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[3].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[3].id)} revealEvent={revealEvent} />
           </div>
         </>
       ) : otherPlayers.length === 3 ? (
         <>
           <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} />
+            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} />
           </div>
           <div className="absolute left-1/2 -translate-x-1/2" style={{ top: topRowY }}>
-            <PlayerMat player={otherPlayers[1]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[1].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[1].id)} />
+            <PlayerMat player={otherPlayers[1]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[1].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[1].id)} revealEvent={revealEvent} />
           </div>
           <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[2]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[2].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[2].id)} />
+            <PlayerMat player={otherPlayers[2]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[2].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[2].id)} revealEvent={revealEvent} />
           </div>
         </>
       ) : (
         <div className="absolute left-0 right-0 flex justify-center" style={{ top: topRowY, gap: "4%" }}>
           {otherPlayers.map((player) => (
-            <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} />
+            <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} />
           ))}
         </div>
       );
@@ -176,14 +197,20 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
       <div className="absolute left-0 right-0 z-20 flex items-end justify-center gap-12" style={{ bottom: bottomRowY }}>
         {localPlayer && (
           <div ref={containerRef}>
-            <PlayerMat player={localPlayer} isCurrentTurn={gameState.turnPlayerId === localPlayer.id} isLocalView deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={Math.max(0, otherPlayers.length) * 2} />
+            <PlayerMat player={localPlayer} isCurrentTurn={gameState.turnPlayerId === localPlayer.id} isLocalView deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={Math.max(0, otherPlayers.length) * 2} revealEvent={revealEvent} />
           </div>
         )}
         {actionControls && (
           <div
-            className={`-translate-y-12 w-96 ${isDealing ? "pointer-events-none opacity-60" : ""}`}
+            className={`-translate-y-12 w-96 ${(isDealing || isRevealing) ? "pointer-events-none opacity-60" : ""}`}
           >
-            {actionControls}
+            {isRevealing ? (
+              <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">
+                Revealing card...
+              </div>
+            ) : (
+              actionControls
+            )}
           </div>
         )}
       </div>

@@ -32,6 +32,7 @@ export const initializeGame = (playerIds: string[]): GameState => {
     pendingDiscardPlayerId: "",
     pendingResolution: null,
     pendingExchange: null,
+    lastReveal: null,
     gameLog: [],
   };
 };

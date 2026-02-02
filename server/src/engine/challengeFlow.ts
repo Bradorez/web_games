@@ -44,7 +44,15 @@ export const handleChallengeFlow = (
       challengedId,
       pendingAction.claimedCard
     );
-    const afterLoss = applyLoss(swappedState, challengerId);
+    const afterReveal = {
+      ...swappedState,
+      lastReveal: {
+        playerId: challengedId,
+        cardType: pendingAction.claimedCard,
+        timestamp: Date.now(),
+      },
+    };
+    const afterLoss = applyLoss(afterReveal, challengerId);
     if (afterLoss.currentPhase === GamePhase.LOSE_CARD_WINDOW) {
       const kind =
         state.currentPhase === GamePhase.BLOCK_CHALLENGE_WINDOW

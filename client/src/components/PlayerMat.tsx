@@ -11,6 +11,11 @@ interface PlayerMatProps {
   dealToken?: number;
   uiScale?: number;
   dealBaseIndex?: number;
+  revealEvent?: {
+    playerId: string;
+    cardType: CardType;
+    timestamp: number;
+  } | null;
 }
 
 export const PlayerMat = ({
@@ -21,6 +26,7 @@ export const PlayerMat = ({
   dealToken = 0,
   uiScale = 1,
   dealBaseIndex = 0,
+  revealEvent = null,
 }: PlayerMatProps): JSX.Element => {
   const borderClass = isCurrentTurn ? "border-emerald-400" : "border-slate-700";
   const matRef = useRef<HTMLDivElement | null>(null);
@@ -28,6 +34,16 @@ export const PlayerMat = ({
   const lastDealTokenRef = useRef(0);
   const prevGraveyardIdsRef = useRef(new Set<string>());
   const [flipPulse, setFlipPulse] = useState<Record<string, number>>({});
+  const lastRevealRef = useRef<number>(0);
+  const prevHandIdsRef = useRef<string[]>([]);
+  const prevOrderRef = useRef<string[]>([]);
+  const slotRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [revealAnim, setRevealAnim] = useState<{
+    key: number;
+    cardType: CardType;
+    slotIndex: number;
+    offset: { x: number; y: number };
+  } | null>(null);
   const orderRef = useRef<string[]>([]);
   const currentIds = [...player.hand, ...player.graveyard].map((card) => card.id);
   const currentSet = new Set(currentIds);
@@ -89,6 +105,46 @@ export const PlayerMat = ({
     prevGraveyardIdsRef.current = next;
   }, [player.graveyard]);
 
+  useEffect(() => {
+    prevHandIdsRef.current = player.hand.map((card) => card.id);
+    prevOrderRef.current = orderRef.current.slice(0, 2);
+  }, [player.hand, player.graveyard]);
+
+  useEffect(() => {
+    if (!revealEvent || revealEvent.playerId !== player.id) {
+      return;
+    }
+    if (lastRevealRef.current === revealEvent.timestamp) {
+      return;
+    }
+    lastRevealRef.current = revealEvent.timestamp;
+    const prevIds = prevHandIdsRef.current;
+    const currentIds = player.hand.map((card) => card.id);
+    const removedId = prevIds.find((id) => !currentIds.includes(id));
+    const slotIndex = Math.max(0, prevOrderRef.current.indexOf(removedId ?? ""));
+    const slotEl = slotRefs.current[slotIndex];
+    const fallbackOffset = dealOffset ? { x: dealOffset.x / uiScale, y: dealOffset.y / uiScale } : { x: 0, y: 0 };
+    let offset = fallbackOffset;
+    if (deckRect && slotEl) {
+      const deckCenterX = deckRect.left + deckRect.width / 2;
+      const deckCenterY = deckRect.top + deckRect.height / 2;
+      const slotRect = slotEl.getBoundingClientRect();
+      const slotCenterX = slotRect.left + slotRect.width / 2;
+      const slotCenterY = slotRect.top + slotRect.height / 2;
+      offset = {
+        x: (deckCenterX - slotCenterX) / uiScale,
+        y: (deckCenterY - slotCenterY) / uiScale,
+      };
+    }
+    setRevealAnim({
+      key: revealEvent.timestamp,
+      cardType: revealEvent.cardType,
+      slotIndex,
+      offset,
+    });
+    const timeoutId = window.setTimeout(() => setRevealAnim(null), 3000);
+    return () => window.clearTimeout(timeoutId);
+  }, [revealEvent, player.id, player.hand, deckRect, dealOffset, uiScale]);
 
   return (
     <div
@@ -127,40 +183,95 @@ export const PlayerMat = ({
             ? { duration: 0.5, ease: "easeOut" }
             : { duration: 1.2, delay: 0.2 + (dealBaseIndex + index) * 0.45, ease: [0.22, 1, 0.36, 1] };
           const rotateY = isGraveyard ? 180 : 0;
+          const showReveal = revealAnim && revealAnim.slotIndex === index;
           return (
-            <motion.div
-              key={`${card.id}-${dealToken}-${flipKey}`}
-              layout={false}
-              initial={isFlipping ? { rotateY: 0 } : initial}
-              animate={{
-                x: 0,
-                y: 0,
-                opacity: 1,
-                scale: 1,
-                rotateY,
+            <div
+              key={`${card.id}-slot`}
+              ref={(el) => {
+                slotRefs.current[index] = el;
               }}
-              transition={transition}
-              style={{ transformStyle: "preserve-3d", perspective: 900 }}
+              className="relative"
             >
-              <div style={{ backfaceVisibility: "hidden" }}>
-                <Card
-                  id={card.id}
-                  type={card.type}
-                  isFaceUp={card.type !== CardType.Unknown || card.isRevealed}
-                  dimmed={false}
-                  showDeadIcon={false}
-                />
-              </div>
-              <div style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", position: "absolute", inset: 0 }}>
-                <Card
-                  id={`${card.id}-dead`}
-                  type={card.type}
-                  isFaceUp={true}
-                  dimmed={Boolean(isLocalView && isGraveyard)}
-                  showDeadIcon={Boolean(isGraveyard)}
-                />
-              </div>
-            </motion.div>
+              {showReveal && (
+                <motion.div
+                  key={`reveal-${revealAnim.key}`}
+                  initial={{ rotateY: 0, x: 0, y: 0, opacity: 1, scale: 1 }}
+                  animate={{
+                    rotateY: [0, 180, 180],
+                    x: [0, 0, revealAnim.offset.x],
+                    y: [0, 0, revealAnim.offset.y],
+                    opacity: [1, 1, 0],
+                    scale: [1, 1, 0.95],
+                  }}
+                  transition={{
+                    rotateY: { duration: 1.0, ease: "easeOut" },
+                    x: { duration: 1.2, times: [0, 0.55, 1], ease: "easeInOut" },
+                    y: { duration: 1.2, times: [0, 0.55, 1], ease: "easeInOut" },
+                    opacity: { duration: 1.6, times: [0, 0.75, 1], ease: "easeInOut" },
+                    scale: { duration: 1.2, times: [0, 0.55, 1], ease: "easeInOut" },
+                  }}
+                  style={{ transformStyle: "preserve-3d", perspective: 900 }}
+                  className="absolute inset-0 z-20 pointer-events-none"
+                >
+                  <div style={{ backfaceVisibility: "hidden" }}>
+                    <Card id={`reveal-face-${revealAnim.key}`} type={revealAnim.cardType} isFaceUp={true} />
+                  </div>
+                  <div style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", position: "absolute", inset: 0 }}>
+                    <Card id={`reveal-face-back-${revealAnim.key}`} type={revealAnim.cardType} isFaceUp={true} />
+                  </div>
+                </motion.div>
+              )}
+
+              {showReveal && (
+                <motion.div
+                  key={`deal-${revealAnim.key}`}
+                  initial={{ x: revealAnim.offset.x, y: revealAnim.offset.y, opacity: 1, scale: 0.9 }}
+                  animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                  transition={{ delay: 1.85, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 z-10 pointer-events-none"
+                >
+                  <Card id={`reveal-deal-${revealAnim.key}`} type={CardType.Unknown} isFaceUp={false} />
+                </motion.div>
+              )}
+
+              <motion.div
+                key={`${card.id}-${dealToken}-${flipKey}`}
+                layout={false}
+                initial={isFlipping ? { rotateY: 0 } : initial}
+                animate={{
+                  x: 0,
+                  y: 0,
+                  opacity: 1,
+                  scale: 1,
+                  rotateY,
+                }}
+                transition={transition}
+                style={{
+                  transformStyle: "preserve-3d",
+                  perspective: 900,
+                  visibility: showReveal ? "hidden" : "visible",
+                }}
+              >
+                <div style={{ backfaceVisibility: "hidden" }}>
+                  <Card
+                    id={card.id}
+                    type={card.type}
+                    isFaceUp={card.type !== CardType.Unknown || card.isRevealed}
+                    dimmed={false}
+                    showDeadIcon={false}
+                  />
+                </div>
+                <div style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)", position: "absolute", inset: 0 }}>
+                  <Card
+                    id={`${card.id}-dead`}
+                    type={card.type}
+                    isFaceUp={true}
+                    dimmed={Boolean(isLocalView && isGraveyard)}
+                    showDeadIcon={Boolean(isGraveyard)}
+                  />
+                </div>
+              </motion.div>
+            </div>
           );
         })}
       </div>

@@ -45,6 +45,7 @@ export const createRoomState = (
     players,
     pot: calculatePot(players),
     gameLog: baseState.gameLog,
+    lastReveal: null,
   };
 };
 
@@ -147,6 +148,7 @@ export const startGameState = (state: GameState): GameState => {
     turnPlayerId: state.turnPlayerId || state.hostPlayerId,
     pendingResolution: null,
     pendingExchange: null,
+    lastReveal: null,
   };
 };
 

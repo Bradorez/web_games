@@ -89,6 +89,8 @@ export interface GameState {
   pendingResolution: PendingResolution | null;
   /** Exchange data when an Ambassador exchange is in progress. */
   pendingExchange: PendingExchange | null;
+  /** Most recent revealed card for animation purposes. */
+  lastReveal: LastReveal | null;
   /** Chronological log of notable game events. */
   gameLog: GameLogEntry[];
 }
@@ -100,6 +102,15 @@ export interface GameLogEntry {
   timestamp: number;
   /** Human-readable description of the event. */
   message: string;
+}
+
+export interface LastReveal {
+  /** Player who revealed a card after a successful defense. */
+  playerId: string;
+  /** Card type that was revealed to the table. */
+  cardType: CardType;
+  /** Unix timestamp (ms) when the reveal occurred. */
+  timestamp: number;
 }
 
 export interface PendingAction {
