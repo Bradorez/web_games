@@ -1,7 +1,7 @@
 import { CardType, GamePhase, GameState, Player } from "../../shared/types";
 import { handleChallengeFlow } from "./challengeFlow";
 import { initiateActionFlow } from "./challengeInitiateFlow";
-import { updatePlayer } from "./challengeHelpers";
+import { returnCoinsOnDeath, updatePlayer } from "./challengeHelpers";
 import { GameAction } from "./actionTypes";
 import { handlePassFlow } from "./challengePassFlow";
 import { enforceGameOver } from "./gameOutcome";
@@ -35,11 +35,12 @@ const applyLossIfForced = (state: GameState, playerId: string): GameState => {
     lives: remainingHand.length,
     isAlive: remainingHand.length > 0,
   };
-  return updatePlayer(
+  const updatedState = updatePlayer(
     appendLog(state, `${player.name} loses influence (${revealedCard.type}).`),
     playerId,
     updatedPlayer
   );
+  return returnCoinsOnDeath(updatedState, playerId);
 };
 
 export const initiateAction = (state: GameState, action: GameAction): GameState =>

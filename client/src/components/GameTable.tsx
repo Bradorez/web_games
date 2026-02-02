@@ -57,6 +57,7 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
       .reverse()
       .find((entry) => entry.message.includes("Cards have been dealt"));
     if (!dealEntry) return;
+    if (dealEntry.timestamp < mountTimeRef.current) return;
     if (lastDealIdRef.current === dealEntry.id) return;
     const storageKey = `coup:deal-played:${roomId}`;
     try {

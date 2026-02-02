@@ -1,5 +1,5 @@
 import { GamePhase, GameState, Player } from "../../shared/types";
-import { advanceTurn, clearPending, updatePlayer } from "./challengeHelpers";
+import { advanceTurn, clearPending, returnCoinsOnDeath, updatePlayer } from "./challengeHelpers";
 import { CHALLENGE_DURATION_MS, LossHandler, resolveAction } from "./challengeResolution";
 import { appendLog } from "./log";
 
@@ -38,31 +38,32 @@ export const handleLoseCardChoiceFlow = (
     playerId,
     updatedPlayer
   );
+  const returnedState = returnCoinsOnDeath(updatedState, playerId);
 
   const resolvedBase: GameState = {
-    ...updatedState,
+    ...returnedState,
     currentPhase: GamePhase.ACTION_DECLARATION,
     pendingDiscardPlayerId: "",
   };
 
-  if (!updatedState.pendingResolution) {
+  if (!returnedState.pendingResolution) {
     return resolvedBase;
   }
 
-  const resolution = updatedState.pendingResolution;
+  const resolution = returnedState.pendingResolution;
   const clearedResolution = { ...resolvedBase, pendingResolution: null };
   if (resolution.kind === "advance_turn") {
     return advanceTurn(clearPending(clearedResolution), resolution.sourcePlayerId);
   }
-  if (resolution.kind === "resolve_action" && updatedState.pendingAction) {
-    return resolveAction(clearPending(clearedResolution), updatedState.pendingAction, applyLoss);
+  if (resolution.kind === "resolve_action" && returnedState.pendingAction) {
+    return resolveAction(clearPending(clearedResolution), returnedState.pendingAction, applyLoss);
   }
-  if (resolution.kind === "open_block_window" && updatedState.pendingAction) {
+  if (resolution.kind === "open_block_window" && returnedState.pendingAction) {
     return {
       ...clearPending(clearedResolution),
       currentPhase: GamePhase.BLOCK_WINDOW,
       pendingAction: {
-        ...updatedState.pendingAction,
+        ...returnedState.pendingAction,
         blockerId: "",
         passedPlayerIds: [],
         timerExpiresAt: Date.now() + CHALLENGE_DURATION_MS,

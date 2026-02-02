@@ -105,6 +105,33 @@ export const applyPotCoins = (
   };
 };
 
+export const returnCoinsOnDeath = (
+  state: GameState,
+  playerId: string
+): GameState => {
+  const TOTAL_COINS = 50;
+  const player = state.players[playerId];
+  if (!player || player.isAlive || player.coins <= 0) {
+    return state;
+  }
+  const capacity = Math.max(0, TOTAL_COINS - state.pot);
+  const debit = Math.min(player.coins, capacity);
+  if (debit === 0) {
+    return state;
+  }
+  return {
+    ...state,
+    pot: state.pot + debit,
+    players: {
+      ...state.players,
+      [playerId]: {
+        ...player,
+        coins: player.coins - debit,
+      },
+    },
+  };
+};
+
 export const swapClaimedCard = (
   state: GameState,
   playerId: string,
