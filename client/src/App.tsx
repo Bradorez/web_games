@@ -174,6 +174,7 @@ const App = (): JSX.Element => {
           <GameTable
             gameState={gameState}
             localPlayerId={localPlayerId}
+            roomId={roomId}
             actionControls={
               <ActionControls
                 gameState={gameState}

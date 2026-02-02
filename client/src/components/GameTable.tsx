@@ -7,10 +7,11 @@ import { PlayerMat } from "./PlayerMat";
 interface GameTableProps {
   gameState: GameState;
   localPlayerId: string;
+  roomId: string;
   actionControls?: React.ReactNode;
 }
 
-export const GameTable = ({ gameState, localPlayerId, actionControls }: GameTableProps): JSX.Element => {
+export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: GameTableProps): JSX.Element => {
   const localPlayer = gameState.players[localPlayerId];
   const otherPlayers = Object.values(gameState.players).filter((player) => player.id !== localPlayerId);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -18,6 +19,9 @@ export const GameTable = ({ gameState, localPlayerId, actionControls }: GameTabl
   const [deckRect, setDeckRect] = useState<DOMRect | null>(null);
   const [dealToken, setDealToken] = useState(0);
   const [uiScale, setUiScale] = useState(1);
+  const [isDealing, setIsDealing] = useState(false);
+  const lastDealIdRef = useRef<string | null>(null);
+  const lastDealingTokenRef = useRef<number>(0);
   const sideInset = "-4%";
   const topRowY = "-4%";
   const sideRowY = "60%";
@@ -43,10 +47,39 @@ export const GameTable = ({ gameState, localPlayerId, actionControls }: GameTabl
   }, []);
 
   useEffect(() => {
-    if (gameState.isStarted) {
-      setDealToken((prev) => prev + 1);
+    if (!gameState.isStarted || !roomId) return;
+    const dealEntry = [...gameState.gameLog]
+      .reverse()
+      .find((entry) => entry.message.includes("Cards have been dealt"));
+    if (!dealEntry) return;
+    if (lastDealIdRef.current === dealEntry.id) return;
+    const storageKey = `coup:deal-played:${roomId}`;
+    try {
+      const lastPlayed = localStorage.getItem(storageKey);
+      if (lastPlayed === dealEntry.id) {
+        lastDealIdRef.current = dealEntry.id;
+        return;
+      }
+      localStorage.setItem(storageKey, dealEntry.id);
+    } catch {
+      // ignore storage failures; fall back to in-memory tracking
     }
-  }, [gameState.isStarted]);
+    lastDealIdRef.current = dealEntry.id;
+    setDealToken((prev) => prev + 1);
+  }, [gameState.isStarted, gameState.gameLog, roomId]);
+
+  useEffect(() => {
+    if (dealToken === 0) return;
+    if (lastDealingTokenRef.current === dealToken) return;
+    lastDealingTokenRef.current = dealToken;
+    const playerCount = Object.keys(gameState.players).length;
+    const totalCards = Math.max(1, playerCount) * 2;
+    const lastDelay = 0.2 + (totalCards - 1) * 0.45;
+    const totalDuration = (lastDelay + 1.2) * 1000;
+    setIsDealing(true);
+    const timeoutId = window.setTimeout(() => setIsDealing(false), totalDuration);
+    return () => window.clearTimeout(timeoutId);
+  }, [dealToken, gameState.players]);
 
   return (
     <div className="relative h-full w-full text-slate-100">
@@ -147,7 +180,9 @@ export const GameTable = ({ gameState, localPlayerId, actionControls }: GameTabl
           </div>
         )}
         {actionControls && (
-          <div className="-translate-y-12 w-96">
+          <div
+            className={`-translate-y-12 w-96 ${isDealing ? "pointer-events-none opacity-60" : ""}`}
+          >
             {actionControls}
           </div>
         )}
