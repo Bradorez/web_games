@@ -28,10 +28,32 @@ export const PlayerMat = ({
   const lastDealTokenRef = useRef(0);
   const prevGraveyardIdsRef = useRef(new Set<string>());
   const [flipPulse, setFlipPulse] = useState<Record<string, number>>({});
-  const displayCards = [
-    ...player.hand.map((card) => ({ card, isGraveyard: false })),
-    ...player.graveyard.map((card) => ({ card, isGraveyard: true })),
-  ];
+  const orderRef = useRef<string[]>([]);
+  const currentIds = [...player.hand, ...player.graveyard].map((card) => card.id);
+  const currentSet = new Set(currentIds);
+  const desiredSlots = Math.min(2, currentIds.length);
+  const slotIds = orderRef.current.slice(0, 2);
+  const available = currentIds.filter((id) => !slotIds.includes(id));
+  for (let i = 0; i < 2; i += 1) {
+    if (i >= desiredSlots) {
+      slotIds[i] = undefined as unknown as string;
+      continue;
+    }
+    if (!slotIds[i] || !currentSet.has(slotIds[i])) {
+      slotIds[i] = available.shift() ?? slotIds[i];
+    }
+  }
+  const nextIds = slotIds.filter((id): id is string => Boolean(id) && currentSet.has(id));
+  while (nextIds.length < desiredSlots && available.length > 0) {
+    nextIds.push(available.shift() as string);
+  }
+  orderRef.current = nextIds;
+  const cardById = new Map<string, { card: (typeof player.hand)[number]; isGraveyard: boolean }>();
+  player.hand.forEach((card) => cardById.set(card.id, { card, isGraveyard: false }));
+  player.graveyard.forEach((card) => cardById.set(card.id, { card, isGraveyard: true }));
+  const displayCards = orderRef.current
+    .map((id) => cardById.get(id))
+    .filter((value): value is { card: (typeof player.hand)[number]; isGraveyard: boolean } => Boolean(value));
 
   useLayoutEffect(() => {
     if (!deckRect || !matRef.current) {
