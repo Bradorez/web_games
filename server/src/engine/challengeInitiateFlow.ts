@@ -34,10 +34,11 @@ export const initiateActionFlow = (
   if (action.type === ActionType.Income) return advanceTurn(appendLog(applyPotCoins(state, sourcePlayerId, 1), `${state.players[sourcePlayerId]?.name ?? "Player"} takes Income.`), sourcePlayerId);
 
   if (action.type === ActionType.ForeignAid) {
+    const normalizedAction = { ...action, targetPlayerId: "" };
     return {
       ...appendLog(state, `${state.players[sourcePlayerId]?.name ?? "Player"} declares Foreign Aid.`),
       currentPhase: GamePhase.BLOCK_WINDOW,
-      pendingAction: createPendingAction(action, sourcePlayerId),
+      pendingAction: createPendingAction(normalizedAction, sourcePlayerId),
       pendingDiscardPlayerId: "",
     };
   }
@@ -71,10 +72,11 @@ export const initiateActionFlow = (
       action.type === ActionType.Assassinate;
     const targetPlayerId = needsTarget
       ? action.targetPlayerId ?? getDefaultTargetId(state, sourcePlayerId)
-      : action.targetPlayerId;
+      : "";
     if (needsTarget && !targetPlayerId) {
       return state;
     }
+    const normalizedAction = needsTarget ? { ...action, targetPlayerId } : { ...action, targetPlayerId: "" };
 
     if (action.type === ActionType.Assassinate) {
       const sourcePlayer = state.players[sourcePlayerId];
@@ -86,7 +88,7 @@ export const initiateActionFlow = (
         ...paidState,
         currentPhase: GamePhase.CHALLENGE_WINDOW,
         pendingAction: createPendingAction(
-          { ...action, targetPlayerId },
+          normalizedAction,
           sourcePlayerId
         ),
         pendingDiscardPlayerId: "",
@@ -94,10 +96,10 @@ export const initiateActionFlow = (
     }
 
     return {
-      ...appendLog(state, `${state.players[sourcePlayerId]?.name ?? "Player"} declares ${action.type}${targetPlayerId ? ` on ${state.players[targetPlayerId]?.name ?? "a player"}` : ""}.`),
+      ...appendLog(state, `${state.players[sourcePlayerId]?.name ?? "Player"} declares ${action.type}.`),
       currentPhase: GamePhase.CHALLENGE_WINDOW,
       pendingAction: createPendingAction(
-        { ...action, targetPlayerId },
+        normalizedAction,
         sourcePlayerId
       ),
       pendingDiscardPlayerId: "",

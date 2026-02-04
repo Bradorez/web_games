@@ -5,7 +5,7 @@ interface GameLogProps {
 }
 
 export const GameLog = ({ entries }: GameLogProps): JSX.Element => {
-  const visible = entries.slice(-12);
+  const visible = entries.slice(-30);
   return (
     <div className="flex max-h-[24vh] flex-col rounded-xl border border-slate-800 bg-slate-900/90 p-4">
       <div className="text-xs font-semibold uppercase tracking-wide text-slate-400">Game Log</div>
