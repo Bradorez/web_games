@@ -102,6 +102,37 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
     gameState.lastReveal && gameState.lastReveal.timestamp >= mountTimeRef.current
       ? gameState.lastReveal
       : null;
+  const exchangeEventEntry = [...gameState.gameLog]
+    .reverse()
+    .find((entry) => entry.message.includes("completes the exchange") && entry.timestamp >= mountTimeRef.current);
+  const exchangeEvent = exchangeEventEntry
+    ? { timestamp: exchangeEventEntry.timestamp, message: exchangeEventEntry.message }
+    : null;
+  const lastNonPassLog = [...gameState.gameLog]
+    .reverse()
+    .find((entry) => !entry.message.toLowerCase().includes("passes"));
+  const pendingAction = gameState.pendingAction;
+  const sourceName = pendingAction ? (gameState.players[pendingAction.sourcePlayerId]?.name ?? "Player") : "";
+  const targetName = pendingAction && pendingAction.targetPlayerId
+    ? (gameState.players[pendingAction.targetPlayerId]?.name ?? "a player")
+    : "";
+  const blockerName = pendingAction && pendingAction.blockerId
+    ? (gameState.players[pendingAction.blockerId]?.name ?? "a player")
+    : "";
+  const actionLine = pendingAction
+    ? `${sourceName} declares ${pendingAction.actionType}${targetName ? ` on ${targetName}` : ""}.`
+    : "";
+  const phaseSuffix = pendingAction
+    ? gameState.currentPhase === "CHALLENGE_WINDOW"
+      ? "Awaiting challenges."
+      : gameState.currentPhase === "BLOCK_WINDOW"
+        ? "Awaiting blocks."
+        : gameState.currentPhase === "BLOCK_CHALLENGE_WINDOW"
+          ? `Block by ${blockerName}. Awaiting challenges.`
+          : ""
+    : "";
+  const statusLine = [actionLine, phaseSuffix].filter(Boolean).join(" ");
+  const fallbackLine = lastNonPassLog?.message ?? "";
 
   return (
     <div className="relative h-full w-full text-slate-100">
@@ -127,47 +158,47 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
         return otherPlayers.length === 5 ? (
         <>
           <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} />
+            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
           <div className="absolute left-1/2 flex -translate-x-1/2" style={{ top: topRowY, gap: "3%" }}>
             {otherPlayers.slice(1, 4).map((player) => (
-              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} />
+              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
             ))}
           </div>
           <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[4]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[4].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[4].id)} revealEvent={revealEvent} />
+            <PlayerMat player={otherPlayers[4]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[4].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[4].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
         </>
       ) : otherPlayers.length === 4 ? (
         <>
           <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} />
+            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
           <div className="absolute left-1/2 flex -translate-x-1/2" style={{ top: topRowY, gap: "3%" }}>
             {otherPlayers.slice(1, 3).map((player) => (
-              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} />
+              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
             ))}
           </div>
           <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[3]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[3].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[3].id)} revealEvent={revealEvent} />
+            <PlayerMat player={otherPlayers[3]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[3].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[3].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
         </>
       ) : otherPlayers.length === 3 ? (
         <>
           <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} />
+            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
           <div className="absolute left-1/2 -translate-x-1/2" style={{ top: topRowY }}>
-            <PlayerMat player={otherPlayers[1]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[1].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[1].id)} revealEvent={revealEvent} />
+            <PlayerMat player={otherPlayers[1]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[1].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[1].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
           <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[2]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[2].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[2].id)} revealEvent={revealEvent} />
+            <PlayerMat player={otherPlayers[2]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[2].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[2].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
         </>
       ) : (
         <div className="absolute left-0 right-0 flex justify-center" style={{ top: topRowY, gap: "4%" }}>
           {otherPlayers.map((player) => (
-            <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} />
+            <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           ))}
         </div>
       );
@@ -198,7 +229,7 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
       <div className="absolute left-0 right-0 z-20 flex items-end justify-center gap-12" style={{ bottom: bottomRowY }}>
         {localPlayer && (
           <div ref={containerRef}>
-            <PlayerMat player={localPlayer} isCurrentTurn={gameState.turnPlayerId === localPlayer.id} isLocalView deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={Math.max(0, otherPlayers.length) * 2} revealEvent={revealEvent} />
+            <PlayerMat player={localPlayer} isCurrentTurn={gameState.turnPlayerId === localPlayer.id} isLocalView deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={Math.max(0, otherPlayers.length) * 2} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
         )}
         {actionControls && (
@@ -210,7 +241,14 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
                 Revealing card...
               </div>
             ) : (
-              actionControls
+              <div className="flex flex-col gap-2">
+                {(statusLine || fallbackLine) && (
+                  <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-xs text-slate-300">
+                    {statusLine || fallbackLine}
+                  </div>
+                )}
+                {actionControls}
+              </div>
             )}
           </div>
         )}
