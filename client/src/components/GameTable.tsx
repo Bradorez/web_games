@@ -226,7 +226,7 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
         <GameLog entries={gameState.gameLog} />
       </div>
 
-      <div className="absolute left-0 right-0 z-20 flex items-end justify-center gap-12" style={{ bottom: bottomRowY }}>
+      <div className="absolute left-0 right-0 z-20 flex items-start justify-center gap-12" style={{ bottom: bottomRowY, transform: "translateX(-2%)" }}>
         {localPlayer && (
           <div ref={containerRef}>
             <PlayerMat player={localPlayer} isCurrentTurn={gameState.turnPlayerId === localPlayer.id} isLocalView deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={Math.max(0, otherPlayers.length) * 2} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
@@ -234,7 +234,7 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
         )}
         {actionControls && (
           <div
-            className={`-translate-y-12 w-96 ${(isDealing || isRevealing) ? "pointer-events-none opacity-60" : ""}`}
+            className={`w-[28rem] ${(isDealing || isRevealing) ? "pointer-events-none opacity-60" : ""}`}
           >
             {isRevealing ? (
               <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-4 text-sm text-slate-300">
@@ -243,7 +243,7 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
             ) : (
               <div className="flex flex-col gap-2">
                 {(statusLine || fallbackLine) && (
-                  <div className="rounded-lg border border-slate-800 bg-slate-900/70 px-3 py-2 text-xs text-slate-300">
+                  <div className="w-full rounded-lg border border-slate-800 bg-slate-900/70 px-10 py-4 text-base text-slate-200">
                     {statusLine || fallbackLine}
                   </div>
                 )}
