@@ -7,6 +7,7 @@ interface PlayerMatProps {
   player: Player;
   isCurrentTurn: boolean;
   isLocalView?: boolean;
+  hasPassed?: boolean;
   deckRect?: DOMRect | null;
   dealToken?: number;
   uiScale?: number;
@@ -22,6 +23,7 @@ export const PlayerMat = ({
   player,
   isCurrentTurn,
   isLocalView = false,
+  hasPassed = false,
   deckRect,
   dealToken = 0,
   uiScale = 1,
@@ -149,8 +151,12 @@ export const PlayerMat = ({
   return (
     <div
       ref={matRef}
-      className={`flex w-full max-w-2xl flex-col gap-5 rounded-2xl border bg-slate-800/70 p-6 shadow ${borderClass}`}
+      className={`relative flex w-full max-w-2xl flex-col gap-5 rounded-2xl border bg-slate-800/70 p-6 shadow ${borderClass}`}
     >
+      <div
+        className={`absolute bottom-3 right-3 h-3 w-3 rounded-full ${hasPassed ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]" : "bg-slate-600/60"}`}
+        title={hasPassed ? "Passed" : "Not passed"}
+      />
       <div className="flex items-center justify-between">
         <div className="text-2xl font-semibold text-slate-100">{player.name}</div>
         <div className="flex items-center gap-2">

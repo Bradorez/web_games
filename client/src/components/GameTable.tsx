@@ -112,6 +112,7 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
     .reverse()
     .find((entry) => !entry.message.toLowerCase().includes("passes"));
   const pendingAction = gameState.pendingAction;
+  const passedIds = new Set(pendingAction?.passedPlayerIds ?? []);
   const sourceName = pendingAction ? (gameState.players[pendingAction.sourcePlayerId]?.name ?? "Player") : "";
   const targetName = pendingAction && pendingAction.targetPlayerId
     ? (gameState.players[pendingAction.targetPlayerId]?.name ?? "a player")
@@ -158,47 +159,47 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
         return otherPlayers.length === 5 ? (
         <>
           <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
+            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} hasPassed={passedIds.has(otherPlayers[0].id)} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
           <div className="absolute left-1/2 flex -translate-x-1/2" style={{ top: topRowY, gap: "3%" }}>
             {otherPlayers.slice(1, 4).map((player) => (
-              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
+              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} hasPassed={passedIds.has(player.id)} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
             ))}
           </div>
           <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[4]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[4].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[4].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
+            <PlayerMat player={otherPlayers[4]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[4].id} hasPassed={passedIds.has(otherPlayers[4].id)} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[4].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
         </>
       ) : otherPlayers.length === 4 ? (
         <>
           <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
+            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} hasPassed={passedIds.has(otherPlayers[0].id)} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
           <div className="absolute left-1/2 flex -translate-x-1/2" style={{ top: topRowY, gap: "3%" }}>
             {otherPlayers.slice(1, 3).map((player) => (
-              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
+              <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} hasPassed={passedIds.has(player.id)} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
             ))}
           </div>
           <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[3]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[3].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[3].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
+            <PlayerMat player={otherPlayers[3]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[3].id} hasPassed={passedIds.has(otherPlayers[3].id)} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[3].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
         </>
       ) : otherPlayers.length === 3 ? (
         <>
           <div className="absolute -translate-y-1/2" style={{ left: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
+            <PlayerMat player={otherPlayers[0]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[0].id} hasPassed={passedIds.has(otherPlayers[0].id)} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[0].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
           <div className="absolute left-1/2 -translate-x-1/2" style={{ top: topRowY }}>
-            <PlayerMat player={otherPlayers[1]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[1].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[1].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
+            <PlayerMat player={otherPlayers[1]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[1].id} hasPassed={passedIds.has(otherPlayers[1].id)} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[1].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
           <div className="absolute -translate-y-1/2" style={{ right: sideInset, top: sideRowY }}>
-            <PlayerMat player={otherPlayers[2]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[2].id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[2].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
+            <PlayerMat player={otherPlayers[2]} isCurrentTurn={gameState.turnPlayerId === otherPlayers[2].id} hasPassed={passedIds.has(otherPlayers[2].id)} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(otherPlayers[2].id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
         </>
       ) : (
         <div className="absolute left-0 right-0 flex justify-center" style={{ top: topRowY, gap: "4%" }}>
           {otherPlayers.map((player) => (
-            <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
+            <PlayerMat key={player.id} player={player} isCurrentTurn={gameState.turnPlayerId === player.id} hasPassed={passedIds.has(player.id)} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={baseIndex(player.id)} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           ))}
         </div>
       );
@@ -229,7 +230,7 @@ export const GameTable = ({ gameState, localPlayerId, roomId, actionControls }: 
       <div className="absolute left-0 right-0 z-20 flex items-start justify-center gap-12" style={{ bottom: bottomRowY, transform: "translateX(-2%)" }}>
         {localPlayer && (
           <div ref={containerRef}>
-            <PlayerMat player={localPlayer} isCurrentTurn={gameState.turnPlayerId === localPlayer.id} isLocalView deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={Math.max(0, otherPlayers.length) * 2} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
+            <PlayerMat player={localPlayer} isCurrentTurn={gameState.turnPlayerId === localPlayer.id} isLocalView hasPassed={passedIds.has(localPlayer.id)} deckRect={deckRect} dealToken={dealToken} uiScale={uiScale} dealBaseIndex={Math.max(0, otherPlayers.length) * 2} revealEvent={revealEvent} exchangeEvent={exchangeEvent} />
           </div>
         )}
         {actionControls && (
