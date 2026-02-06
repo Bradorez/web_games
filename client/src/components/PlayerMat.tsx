@@ -39,12 +39,18 @@ export const PlayerMat = ({
   const prevGraveyardIdsRef = useRef(new Set<string>());
   const [flipPulse, setFlipPulse] = useState<Record<string, number>>({});
   const lastRevealRef = useRef<number>(0);
+  const lastExchangeRef = useRef<number>(0);
   const prevHandIdsRef = useRef<string[]>([]);
   const prevOrderRef = useRef<string[]>([]);
   const slotRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [revealAnim, setRevealAnim] = useState<{
     key: number;
     cardType: CardType;
+    slotIndex: number;
+    offset: { x: number; y: number };
+  } | null>(null);
+  const [exchangeAnim, setExchangeAnim] = useState<{
+    key: number;
     slotIndex: number;
     offset: { x: number; y: number };
   } | null>(null);
@@ -150,6 +156,31 @@ export const PlayerMat = ({
     return () => window.clearTimeout(timeoutId);
   }, [revealEvent, player.id, player.hand, deckRect, dealOffset, uiScale]);
 
+  useEffect(() => {
+    if (!exchangeEvent || isLocalView) return;
+    if (lastExchangeRef.current === exchangeEvent.timestamp) return;
+    if (!exchangeEvent.message.includes(player.name)) return;
+    lastExchangeRef.current = exchangeEvent.timestamp;
+    const slotIndex = 0;
+    const slotEl = slotRefs.current[slotIndex];
+    const fallbackOffset = dealOffset ? { x: dealOffset.x / uiScale, y: dealOffset.y / uiScale } : { x: 0, y: 0 };
+    let offset = fallbackOffset;
+    if (deckRect && slotEl) {
+      const deckCenterX = deckRect.left + deckRect.width / 2;
+      const deckCenterY = deckRect.top + deckRect.height / 2;
+      const slotRect = slotEl.getBoundingClientRect();
+      const slotCenterX = slotRect.left + slotRect.width / 2;
+      const slotCenterY = slotRect.top + slotRect.height / 2;
+      offset = {
+        x: (deckCenterX - slotCenterX) / uiScale,
+        y: (deckCenterY - slotCenterY) / uiScale,
+      };
+    }
+    setExchangeAnim({ key: exchangeEvent.timestamp, slotIndex, offset });
+    const timeoutId = window.setTimeout(() => setExchangeAnim(null), 1200);
+    return () => window.clearTimeout(timeoutId);
+  }, [exchangeEvent, player.name, deckRect, dealOffset, uiScale, isLocalView]);
+
   return (
     <div
       ref={matRef}
@@ -192,6 +223,7 @@ export const PlayerMat = ({
             : { duration: 1.2, delay: 0.2 + (dealBaseIndex + index) * 0.45, ease: [0.22, 1, 0.36, 1] };
           const rotateY = isGraveyard ? 180 : 0;
           const showReveal = revealAnim && revealAnim.slotIndex === index;
+          const showExchange = exchangeAnim && exchangeAnim.slotIndex === index;
           return (
             <div
               key={`${card.id}-slot`}
@@ -200,6 +232,28 @@ export const PlayerMat = ({
               }}
               className="relative"
             >
+              {showExchange && (
+                <motion.div
+                  key={`exchange-out-${exchangeAnim.key}`}
+                  initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                  animate={{ x: exchangeAnim.offset.x, y: exchangeAnim.offset.y, opacity: 0.9, scale: 0.9 }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  className="absolute inset-0 z-20 pointer-events-none"
+                >
+                  <Card id={`exchange-out-${exchangeAnim.key}`} type={CardType.Unknown} isFaceUp={false} />
+                </motion.div>
+              )}
+              {showExchange && (
+                <motion.div
+                  key={`exchange-in-${exchangeAnim.key}`}
+                  initial={{ x: exchangeAnim.offset.x, y: exchangeAnim.offset.y, opacity: 1, scale: 0.9 }}
+                  animate={{ x: 0, y: 0, opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  className="absolute inset-0 z-10 pointer-events-none"
+                >
+                  <Card id={`exchange-in-${exchangeAnim.key}`} type={CardType.Unknown} isFaceUp={false} />
+                </motion.div>
+              )}
               {showReveal && (
                 <motion.div
                   key={`reveal-${revealAnim.key}`}
