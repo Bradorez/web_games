@@ -17,6 +17,7 @@ interface PlayerMatProps {
     cardType: CardType;
     timestamp: number;
   } | null;
+  exchangeEvent?: { timestamp: number; message: string } | null;
 }
 
 export const PlayerMat = ({
@@ -29,6 +30,7 @@ export const PlayerMat = ({
   uiScale = 1,
   dealBaseIndex = 0,
   revealEvent = null,
+  exchangeEvent = null,
 }: PlayerMatProps): JSX.Element => {
   const borderClass = isCurrentTurn ? "border-emerald-400" : "border-slate-700";
   const matRef = useRef<HTMLDivElement | null>(null);
