@@ -31,7 +31,7 @@ import {
   socket,
 } from "./services/socketService";
 
-const App = (): JSX.Element => {
+const App = (): JSX.Element | null => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [battleshipState, setBattleshipState] = useState<BattleshipState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
