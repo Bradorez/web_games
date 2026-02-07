@@ -12,9 +12,11 @@ import { handleEndRoom } from "./handlers/endRoom";
 import { handleExchangeChoiceEvent } from "./handlers/exchangeChoice";
 import { handleBlockEvent } from "./handlers/block";
 import { handleLoseCardEvent } from "./handlers/loseCard";
+import { registerBattleshipHandlers } from "./battleshipHandlers";
 type CreateRoomPayload = { playerId: string; name: string; aiCount?: number };
 type JoinRoomPayload = { roomId: string; playerId: string; name: string };
 export const registerSocketHandlers = (io: Server, socket: Socket): void => {
+  registerBattleshipHandlers(io, socket);
   socket.on("create_room", (payload: CreateRoomPayload) => {
     const { playerId, name } = payload;
     const aiCount = Math.max(0, Math.min(payload.aiCount ?? 0, 5));

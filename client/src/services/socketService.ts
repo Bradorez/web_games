@@ -12,6 +12,8 @@ const serverUrl = import.meta.env.VITE_SERVER_URL ?? "http://localhost:3001";
 const PLAYER_KEY_PREFIX = "coup:playerId:";
 const LAST_ROOM_KEY = "coup:lastRoomId";
 const NAME_KEY = "coup:playerName";
+const BATTLESHIP_PLAYER_KEY_PREFIX = "battleship:playerId:";
+const BATTLESHIP_LAST_ROOM_KEY = "battleship:lastRoomId";
 
 export const socket = io(serverUrl, { autoConnect: false });
 
@@ -23,6 +25,13 @@ const getStoredPlayerId = (roomId: string): string | null => {
     return null;
   }
   return localStorage.getItem(`${PLAYER_KEY_PREFIX}${roomId}`);
+};
+
+const getStoredBattleshipPlayerId = (roomId: string): string | null => {
+  if (!canUseStorage()) {
+    return null;
+  }
+  return localStorage.getItem(`${BATTLESHIP_PLAYER_KEY_PREFIX}${roomId}`);
 };
 
 export const saveSession = (
@@ -38,6 +47,19 @@ export const saveSession = (
   localStorage.setItem(NAME_KEY, playerName);
 };
 
+export const saveBattleshipSession = (
+  roomId: string,
+  playerId: string,
+  playerName: string
+): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+  localStorage.setItem(`${BATTLESHIP_PLAYER_KEY_PREFIX}${roomId}`, playerId);
+  localStorage.setItem(BATTLESHIP_LAST_ROOM_KEY, roomId);
+  localStorage.setItem(NAME_KEY, playerName);
+};
+
 export const clearSession = (roomId: string): void => {
   if (!canUseStorage()) {
     return;
@@ -46,6 +68,17 @@ export const clearSession = (roomId: string): void => {
   const lastRoomId = localStorage.getItem(LAST_ROOM_KEY);
   if (lastRoomId === roomId) {
     localStorage.removeItem(LAST_ROOM_KEY);
+  }
+};
+
+export const clearBattleshipSession = (roomId: string): void => {
+  if (!canUseStorage()) {
+    return;
+  }
+  localStorage.removeItem(`${BATTLESHIP_PLAYER_KEY_PREFIX}${roomId}`);
+  const lastRoomId = localStorage.getItem(BATTLESHIP_LAST_ROOM_KEY);
+  if (lastRoomId === roomId) {
+    localStorage.removeItem(BATTLESHIP_LAST_ROOM_KEY);
   }
 };
 
@@ -69,6 +102,26 @@ export const getSavedSession = (): {
   return { roomId, playerId, playerName };
 };
 
+export const getSavedBattleshipSession = (): {
+  roomId: string;
+  playerId: string;
+  playerName: string;
+} | null => {
+  if (!canUseStorage()) {
+    return null;
+  }
+  const roomId = localStorage.getItem(BATTLESHIP_LAST_ROOM_KEY);
+  const playerName = localStorage.getItem(NAME_KEY);
+  if (!roomId || !playerName) {
+    return null;
+  }
+  const playerId = getStoredBattleshipPlayerId(roomId);
+  if (!playerId) {
+    return null;
+  }
+  return { roomId, playerId, playerName };
+};
+
 const ensureConnected = (): void => {
   if (!socket.connected) {
     socket.connect();
@@ -82,12 +135,43 @@ export const createRoom = (playerName: string, aiCount: number): string => {
   return playerId;
 };
 
+export const createBattleshipRoom = (playerName: string): string => {
+  ensureConnected();
+  const playerId = createPlayerId();
+  socket.emit("battleship_create_room", { playerId, name: playerName });
+  return playerId;
+};
+
 export const joinRoom = (roomId: string, playerName: string): string => {
   ensureConnected();
   const storedId = getStoredPlayerId(roomId);
   const playerId = storedId ?? createPlayerId();
   socket.emit("join_room", { roomId, playerId, name: playerName });
   return playerId;
+};
+
+export const joinBattleshipRoom = (roomId: string, playerName: string): string => {
+  ensureConnected();
+  const storedId = getStoredBattleshipPlayerId(roomId);
+  const playerId = storedId ?? createPlayerId();
+  socket.emit("battleship_join_room", { roomId, playerId, name: playerName });
+  return playerId;
+};
+
+export const placeBattleshipShips = (ships: unknown): void => {
+  socket.emit("battleship_place_ships", { ships });
+};
+
+export const fireBattleship = (x: number, y: number): void => {
+  socket.emit("battleship_fire", { x, y });
+};
+
+export const restartBattleship = (): void => {
+  socket.emit("battleship_restart");
+};
+
+export const endBattleshipRoom = (): void => {
+  socket.emit("battleship_end_room");
 };
 
 export const startGame = (): void => {
@@ -98,6 +182,12 @@ export const startGame = (): void => {
 export const leaveRoom = (): void => {
   if (socket.connected) {
     socket.emit("leave_room");
+  }
+};
+
+export const leaveBattleshipRoom = (): void => {
+  if (socket.connected) {
+    socket.emit("battleship_leave");
   }
 };
 

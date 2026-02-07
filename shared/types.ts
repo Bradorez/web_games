@@ -28,6 +28,50 @@ export enum ActionType {
   Steal = "Steal",
 }
 
+export enum GameType {
+  Coup = "coup",
+  Battleship = "battleship",
+}
+
+export enum BattleshipPhase {
+  Placing = "PLACING",
+  InProgress = "IN_PROGRESS",
+  GameOver = "GAME_OVER",
+}
+
+export interface BattleshipPoint {
+  x: number;
+  y: number;
+}
+
+export interface BattleshipShip {
+  id: string;
+  size: number;
+  positions: BattleshipPoint[];
+  hits: BattleshipPoint[];
+  isSunk: boolean;
+}
+
+export interface BattleshipPlayer {
+  id: string;
+  name: string;
+  isConnected: boolean;
+  isReady: boolean;
+  ships: BattleshipShip[];
+  shots: BattleshipPoint[];
+}
+
+export interface BattleshipState {
+  roomId: string;
+  phase: BattleshipPhase;
+  players: Record<string, BattleshipPlayer>;
+  hostPlayerId: string;
+  turnPlayerId: string;
+  winnerPlayerId: string;
+  turnExpiresAt: number;
+  gameLog: GameLogEntry[];
+}
+
 export interface Card {
   /** Unique identifier for a specific card instance. */
   id: string;
