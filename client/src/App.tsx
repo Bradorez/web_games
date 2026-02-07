@@ -335,7 +335,7 @@ const App = (): JSX.Element => {
         state={battleshipState}
         localPlayerId={localPlayerId}
         onPlaceShips={placeBattleshipShips}
-        onFire={fireBattleship}
+        onFire={(point) => fireBattleship(point.x, point.y)}
         onRestart={restartBattleship}
         onLeave={handleLeaveRoom}
       />
@@ -344,6 +344,10 @@ const App = (): JSX.Element => {
 
   if (selectedGame === "questionary") {
     return <QuestionaryGame onBack={() => setSelectedGame(null)} />;
+  }
+
+  if (!gameState) {
+    return null;
   }
 
   return (
