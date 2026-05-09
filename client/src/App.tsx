@@ -10,7 +10,7 @@ import { DeckInspector } from "./components/DeckInspector";
 import { Lobby } from "./components/Lobby";
 import { BattleshipGame } from "./battleship/BattleshipGame";
 import { BattleshipLobby } from "./battleship/BattleshipLobby";
-import { QuestionaryGame } from "./questionary/QuestionaryGame";
+import { FlashcardsGame } from "./flashcards/FlashcardsGame";
 import {
   clearSession,
   clearBattleshipSession,
@@ -35,7 +35,7 @@ const App = (): JSX.Element | null => {
   const [gameState, setGameState] = useState<GameState | null>(null);
   const [battleshipState, setBattleshipState] = useState<BattleshipState | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [selectedGame, setSelectedGame] = useState<"coup" | "battleship" | "questionary" | null>(null);
+  const [selectedGame, setSelectedGame] = useState<"coup" | "battleship" | "flashcards" | null>(null);
   const [roomId, setRoomId] = useState("");
   const [playerName, setPlayerName] = useState("");
   const [localPlayerId, setLocalPlayerId] = useState("");
@@ -99,8 +99,8 @@ const App = (): JSX.Element | null => {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const game = params.get("game");
-    if (game === "questionary") {
-      setSelectedGame("questionary");
+    if (game === "flashcards" || game === "questionary") {
+      setSelectedGame("flashcards");
     } else if (game === "battleship") {
       setSelectedGame("battleship");
     } else if (game === "coup") {
@@ -249,17 +249,17 @@ const App = (): JSX.Element | null => {
 
             <button
               type="button"
-              onClick={() => setSelectedGame("questionary")}
+              onClick={() => setSelectedGame("flashcards")}
               className="group rounded-2xl border border-amber-500/40 bg-slate-900/70 p-6 text-left shadow-lg transition hover:border-amber-400 hover:shadow-amber-500/20"
             >
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-semibold text-amber-200">Questionary</h2>
+                <h2 className="text-2xl font-semibold text-amber-200">Flashcards</h2>
                 <span className="rounded-full bg-amber-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-amber-200">
                   Solo
                 </span>
               </div>
               <p className="mt-3 text-sm text-slate-300">
-                Flip question cards, think of your answer, then reveal the prompt.
+                Create or upload your own flashcards, then flip through a study deck.
               </p>
               <div className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-200">
                 Play now
@@ -342,8 +342,8 @@ const App = (): JSX.Element | null => {
     );
   }
 
-  if (selectedGame === "questionary") {
-    return <QuestionaryGame onBack={() => setSelectedGame(null)} />;
+  if (selectedGame === "flashcards") {
+    return <FlashcardsGame onBack={() => setSelectedGame(null)} />;
   }
 
   if (!gameState) {
